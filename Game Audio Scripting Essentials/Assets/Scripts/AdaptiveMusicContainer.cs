@@ -84,10 +84,37 @@ public class AdaptiveMusicContainer : MonoBehaviour
     {
         _currentState = newState;
 
+        //Abrupt state change
         for (int i = 0; i < _audioLayers.Length; i++)
         {
             _audioLayers[i].SetSFXVolume(_statesAudioLayerVolumes[(int)_currentState][i]);
         }
+
+        //Gradual state change
+        IEnumerator GradualStateChange(State state)
+        {
+            float currentTime = 0.0f;
+            float duration = 2.0f;
+
+            while (currentTime < duration)
+            {
+                for (int i = 0; i < _audioLayers.Length; i++)
+                {
+                    _audioLayers[i].SetSFXVolume(Mathf.Lerp(_statesAudioLayerVolumes[(int)_currentState][i], _statesAudioLayerVolumes[(int)state][i], currentTime / duration));
+                }
+
+                yield return null;
+            }
+
+            yield break;
+        }
+        StartCoroutine(GradualStateChange(newState));
+    }
+
+    //This is called by things in the game to trigger the state change (i.e. through collision, interactions, etc.)
+    public void StateChange(int newState)
+    {
+        SetState((State)newState);
     }
 
     void Transition()
