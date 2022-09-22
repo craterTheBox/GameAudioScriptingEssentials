@@ -239,10 +239,30 @@ MonoBehaviour:
   _trackBPM: 120
   _timeSignatureTop: 4
   _timeSignatureBottom: 4
+  _initState: 1
   _audioLayers:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  _audioLayerVolumes:
+  - 1
+  - 0
+  - 0
+  _state1AudioLayerVolumes:
+  - 1
+  - 0
+  - 0
+  _state2AudioLayerVolumes:
+  - 1
+  - 1
+  - 0
+  _state3AudioLayerVolumes:
+  - 1
+  - 1
+  - 1
+  _state4AudioLayerVolumes: []
+  _state5AudioLayerVolumes: []
+  _ignoreWarnings: 0
 --- !u!4 &1120525771
 Transform:
   m_ObjectHideFlags: 0

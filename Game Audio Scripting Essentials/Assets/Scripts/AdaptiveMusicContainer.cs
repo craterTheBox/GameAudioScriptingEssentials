@@ -8,10 +8,9 @@ public class AdaptiveMusicContainer : MonoBehaviour
     [SerializeField] int _trackBPM = 120;
     [SerializeField] int _timeSignatureTop = 4;
     [SerializeField] int _timeSignatureBottom = 4;
-    enum InitialState { None, State1, State2, State3, State4, State5 }
-    [SerializeField] InitialState _initState;
-
-    int _currentState = 0;
+    enum State { None, State1, State2, State3, State4, State5 }
+    [SerializeField] State _initState;
+    State _currentState = 0;
 
     [Header("Layers")]
     [SerializeField] AudioClipRandomizer[] _audioLayers;
@@ -54,7 +53,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
         }
 
         //Sets the initial state of the layers
-        _currentState = (int)_initState;
+        _currentState = _initState;
         _statesAudioLayerVolumes = new float[5][];
         _statesAudioLayerVolumes[0] = _state1AudioLayerVolumes;
         _statesAudioLayerVolumes[1] = _state2AudioLayerVolumes;
@@ -64,7 +63,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
         for (int i = 0; i < _audioLayers.Length; i++)
         {
-            _audioLayers[i].SetSFXVolume(_statesAudioLayerVolumes[_currentState][i]);
+            _audioLayers[i].SetSFXVolume(_statesAudioLayerVolumes[(int)_currentState][i]);
         }
         
     }
@@ -81,9 +80,14 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
     }
 
-    void SetState()
+    void SetState(State newState)
     {
+        _currentState = newState;
 
+        for (int i = 0; i < _audioLayers.Length; i++)
+        {
+            _audioLayers[i].SetSFXVolume(_statesAudioLayerVolumes[(int)_currentState][i]);
+        }
     }
 
     void Transition()
