@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 [CreateAssetMenu(fileName = "Audio Randomizer Container", menuName = "Audio Randomizer Container", order = 51)]
 public class AudioRandomizerContainer : ScriptableObject
 {
     [Header("Audio")]
     [SerializeField] AudioClip[] _audioClips;
+    [SerializeField] AudioMixerGroup _mixerGroup = null;
 
     [Header("Settings")]
     [SerializeField] public bool _noRepeats = true;

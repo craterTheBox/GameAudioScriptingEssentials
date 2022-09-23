@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class AudioClipRandomizer : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class AudioClipRandomizer : MonoBehaviour
     [SerializeField] AudioSource _audioSource;
     [SerializeField] AudioClip[] _audioClips;
     [SerializeField] AudioRandomizerContainer arcObj = null;
+    [SerializeField] AudioMixerGroup _mixerGroup = null;
 
     [Header("Settings")]
     [SerializeField] bool _noRepeats = true;
@@ -21,12 +23,7 @@ public class AudioClipRandomizer : MonoBehaviour
 
     void Start()
     {
-        if (arcObj != null)
-        {
-            arcObjExists = true;
-            if (arcObj.GetAudioClips().Length == 1)
-                arcObj.SetNoRepeats(false);
-        }
+        DoesArcObjExist();
         //Ensures that if this is done on a single clip it will repeat
         if (!arcObjExists && _audioClips.Length == 1)
             _noRepeats = false;
@@ -35,9 +32,11 @@ public class AudioClipRandomizer : MonoBehaviour
     public void PlaySFX()
     {
         int _index = 0;
-        float _pitch = 0.0f;
+        float _pitch = 1.0f;
         float _volume = 1.0f;
         AudioClip _clip;
+
+        DoesArcObjExist();
 
         if (!arcObjExists)
         {
@@ -68,24 +67,22 @@ public class AudioClipRandomizer : MonoBehaviour
         _lastIndex = _index;
 
         AudioSource _newAudioSource = gameObject.AddComponent<AudioSource>();
+        //_audioSource = _newAudioSource;
         _newAudioSource.clip = _clip;
         _newAudioSource.pitch = _pitch;
         _newAudioSource.volume = _volume;
         _newAudioSource.loop = _loop;
         _newAudioSource.Play();
 
-        Destroy(_newAudioSource, _clip.length + 0.2f);
+        if (!_loop) 
+            Destroy(_newAudioSource, _clip.length + 0.2f);
     }
 
     public void SetSFXVolume(float _volume)
     {
-        AudioSource _current = (GetComponent<AudioSource>().isPlaying) ? GetComponent<AudioSource>() : null;
+        AudioSource _current = GetComponent<AudioSource>();
 
-        if (_current = null)
-        {
-            Debug.LogWarning("WARNING: No AudioSource to set volume of");
-            return;
-        }
+        DoesArcObjExist();
 
         _current.volume = _volume;
     }
@@ -93,6 +90,8 @@ public class AudioClipRandomizer : MonoBehaviour
     public float[] GetSFXLength()
     {
         float[] _lengths = new float[_audioClips.Length];
+
+        DoesArcObjExist();
 
         if (!arcObjExists)
         {
@@ -122,5 +121,14 @@ public class AudioClipRandomizer : MonoBehaviour
         averageLength /= _audioClips.Length;
 
         return averageLength;
+    }
+    void DoesArcObjExist()
+    {
+        if (arcObj != null)
+        {
+            arcObjExists = true;
+            if (arcObj.GetAudioClips().Length == 1)
+                arcObj.SetNoRepeats(false);
+        }
     }
 }

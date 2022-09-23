@@ -32,6 +32,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] bool _ignoreWarnings = false;
+    [SerializeField] bool _numbersToChangeState = true;
 
 
     void Start()
@@ -50,6 +51,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
         for (int i = 0; i < _audioLayers.Length; i++)
         {
             _audioLayers[i].PlaySFX();
+            
         }
 
         //Sets the initial state of the layers
@@ -63,58 +65,74 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
         for (int i = 0; i < _audioLayers.Length; i++)
         {
-            _audioLayers[i].SetSFXVolume(_statesAudioLayerVolumes[(int)_currentState][i]);
+            _audioLayers[i].SetSFXVolume(_statesAudioLayerVolumes[(int)_currentState - 1][i]);
         }
         
     }
 
     void Update()
     {
-        //State Change - VERTICAL
-        if (true)
+        if (_numbersToChangeState)
         {
-
+            //State Change - VERTICAL
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+                SetState((State)1, true);
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+                SetState((State)2, true);
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+                SetState((State)3, true);
+            else if (Input.GetKeyDown(KeyCode.Alpha4))
+                SetState((State)4, true);
+            else if (Input.GetKeyDown(KeyCode.Alpha5))
+                SetState((State)5, true);
         }
 
         //Section Transition - HORIZONTAL
 
     }
 
-    void SetState(State newState)
+    void SetState(State newState, bool smooth)
     {
-        _currentState = newState;
-
         //Abrupt state change
-        for (int i = 0; i < _audioLayers.Length; i++)
+        if (!smooth)
         {
-            _audioLayers[i].SetSFXVolume(_statesAudioLayerVolumes[(int)_currentState][i]);
-        }
-
-        //Gradual state change
-        IEnumerator GradualStateChange(State state)
-        {
-            float currentTime = 0.0f;
-            float duration = 2.0f;
-
-            while (currentTime < duration)
+            for (int i = 0; i < _audioLayers.Length; i++)
             {
-                for (int i = 0; i < _audioLayers.Length; i++)
+                _audioLayers[i].SetSFXVolume(_statesAudioLayerVolumes[(int)newState - 1][i]);
+            }
+        }
+        else
+        {
+            //Gradual state change
+            IEnumerator GradualStateChange(State state)
+            {
+                float currentTime = 0.0f;
+                float duration = 2.0f;
+                float[] currentVolume = _statesAudioLayerVolumes[(int)_currentState - 1];
+
+                while (currentTime < duration)
                 {
-                    _audioLayers[i].SetSFXVolume(Mathf.Lerp(_statesAudioLayerVolumes[(int)_currentState][i], _statesAudioLayerVolumes[(int)state][i], currentTime / duration));
+                    for (int i = 0; i < _audioLayers.Length; i++)
+                    {
+                        if (currentVolume[i] != _statesAudioLayerVolumes[(int)state - 1][i])
+                            _audioLayers[i].SetSFXVolume(Mathf.Lerp(currentVolume[i], _statesAudioLayerVolumes[(int)state - 1][i], currentTime / duration));
+                    }
+                    currentTime += Time.deltaTime;
+
+                    yield return null;
                 }
 
-                yield return null;
+                yield break;
             }
-
-            yield break;
+            StartCoroutine(GradualStateChange(newState));
         }
-        StartCoroutine(GradualStateChange(newState));
+        _currentState = newState;
     }
 
     //This is called by things in the game to trigger the state change (i.e. through collision, interactions, etc.)
     public void StateChange(int newState)
     {
-        SetState((State)newState);
+        SetState((State)newState, true);
     }
 
     void Transition()
