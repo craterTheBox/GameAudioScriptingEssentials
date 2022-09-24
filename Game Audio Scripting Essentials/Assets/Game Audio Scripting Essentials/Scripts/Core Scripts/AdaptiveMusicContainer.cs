@@ -204,7 +204,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
         for (int i = 0; i < _sections.Length; i++)
         {
-            if (fadeType == SectionTransitions.TransitionFade.NoFade) //FUNCTIONS
+            if (fadeType == SectionTransitions.TransitionFade.NoFade) //FUNCTIONAL
             {
                 _sections[i]._audioLayer.SetAudioRandomizerContainer(_sections[i]._arcObj[newSection]);
                 _sections[i]._audioLayer.DestroySFX();
