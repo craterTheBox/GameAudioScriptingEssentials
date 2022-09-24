@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+[AddComponentMenu("Game Audio Scripting Essentials/Example Scripts/Zone Script", 9999)]
 public class GASE_ZoneScripts : MonoBehaviour
 {
     [Header("Events")]

@@ -25,6 +25,6 @@ MonoBehaviour:
   _maxPitch: 1.2
   _volume: 1
   _loop: 0
-  _priority: 128
+  _priority: 196
   _stereoPan: 0
-  _spatialBlend: 0
+  _spatialBlend: 1

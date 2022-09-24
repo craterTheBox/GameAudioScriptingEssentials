@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
-[AddComponentMenu("Game Audio Scripting Essentials/Audio Clip Randomizer")]
+[AddComponentMenu("Game Audio Scripting Essentials/Audio Clip Randomizer", 20)]
 public class AudioClipRandomizer : MonoBehaviour
 {
     [Header("Audio")]
@@ -46,6 +46,7 @@ public class AudioClipRandomizer : MonoBehaviour
 
     int _lastIndex = -1;
     bool _arcObjExists = false;
+    bool _arcChanged = false;
 
     void Start()
     {
@@ -53,6 +54,15 @@ public class AudioClipRandomizer : MonoBehaviour
         //Ensures that if this is done on a single clip it will repeat
         if (!_arcObjExists && _audioClips.Length == 1)
             _noRepeats = false;
+    }
+
+    void Update()
+    {
+        //If the countainer changed, switch to a new audio source
+        if (_arcChanged)
+        {
+
+        }
     }
 
     public void PlaySFX()
@@ -109,6 +119,11 @@ public class AudioClipRandomizer : MonoBehaviour
         if (!_loop)
             Destroy(_newAudioSource, _clip.length + 0.2f);
     }
+    public void DestroySFX()
+    {
+        AudioSource _current = GetComponent<AudioSource>();
+        Destroy(_current);
+    }
 
     public void SetSFXVolume(float _volume)
     {
@@ -153,5 +168,14 @@ public class AudioClipRandomizer : MonoBehaviour
             if (_arcObj.GetAudioClips().Length == 1)
                 _arcObj.NoRepeats = false;
         }
+    }
+    public AudioRandomizerContainer GetAudioRandomizerContainer()
+    {
+        return _arcObj;
+    }
+    public void SetAudioRandomizerContainer(AudioRandomizerContainer _value)
+    {
+        _arcObj = _value;
+        _arcChanged = true;
     }
 }

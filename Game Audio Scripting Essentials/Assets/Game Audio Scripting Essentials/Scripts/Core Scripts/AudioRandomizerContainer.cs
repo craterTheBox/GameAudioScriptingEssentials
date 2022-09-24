@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
-[CreateAssetMenu(fileName = "Audio Randomizer Container", menuName = "Audio Randomizer Container", order = 51)]
-[AddComponentMenu("Game Audio Scripting Essentials/Audio Randomizer Container")]
+[CreateAssetMenu(fileName = "Audio Randomizer Container", menuName = "Game Audio Scripting Essentials/Audio Randomizer Container", order = 51)]
 
 public class AudioRandomizerContainer : ScriptableObject
 {

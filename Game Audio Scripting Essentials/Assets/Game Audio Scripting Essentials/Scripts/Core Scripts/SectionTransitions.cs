@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-[AddComponentMenu("Game Audio Scripting Essentials/Section Transitions")]
+/*
+[AddComponentMenu("Game Audio Scripting Essentials/Section Transitions", 30)]
 public class SectionTransitions : MonoBehaviour
 {
     [Header("Section Transition")]
@@ -18,13 +18,8 @@ public class SectionTransitions : MonoBehaviour
     [Tooltip("Sets whether the transition occurs immediately or on time with the tempo")]
     [SerializeField] TransitionQuantization _quantization;
 
-    void Start()
+    void Transition()
     {
-        
+        //do the thing
     }
-
-    void Update()
-    {
-        
-    }
-}
+}*/

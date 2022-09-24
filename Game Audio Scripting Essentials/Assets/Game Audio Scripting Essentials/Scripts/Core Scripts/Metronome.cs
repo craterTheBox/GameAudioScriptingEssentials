@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[AddComponentMenu("Game Audio Scripting Essentials/Metronome")]
+[AddComponentMenu("Game Audio Scripting Essentials/Metronome", 40)]
 public class Metronome : MonoBehaviour
 {
     [Header("Fields")]
