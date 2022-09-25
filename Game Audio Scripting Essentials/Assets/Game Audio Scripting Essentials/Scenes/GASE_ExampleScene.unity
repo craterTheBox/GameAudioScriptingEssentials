@@ -1212,6 +1212,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1120525771}
   - component: {fileID: 1120525770}
+  - component: {fileID: 1120525772}
   m_Layer: 0
   m_Name: Adaptive Music System
   m_TagString: Untagged
@@ -1243,8 +1244,8 @@ MonoBehaviour:
     _sectionTransitions:
     - _transitionInto: 1
       _fadeType: 0
-      _triggerType: 0
-      _quantization: 3
+      _triggerType: 1
+      _quantization: 0
     - _transitionInto: 1
       _fadeType: 1
       _triggerType: 1
@@ -1286,6 +1287,7 @@ MonoBehaviour:
   _initialState: 1
   _ignoreWarnings: 0
   _numbersToChangeState: 1
+  _playMetronome: 1
 --- !u!4 &1120525771
 Transform:
   m_ObjectHideFlags: 0
@@ -1304,6 +1306,25 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1120525772
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1120525769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd469aa5aec928b46a43dddf83bc9f2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _beatOneARC: {fileID: 11400000, guid: 4809db6fdd89eff4aa5555136e006d44, type: 2}
+  _beatOne: {fileID: 0}
+  _beatARC: {fileID: 11400000, guid: 0fe74ec734cb98e4e92178cc13972861, type: 2}
+  _beat: {fileID: 0}
+  _bpm: 120
+  _topTimeSignature: 4
+  _bottomTimeSignature: 4
 --- !u!1 &1161597232
 GameObject:
   m_ObjectHideFlags: 0

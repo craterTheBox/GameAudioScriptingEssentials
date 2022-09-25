@@ -124,7 +124,22 @@ public class AudioClipRandomizer : MonoBehaviour
         AudioSource _current = GetComponent<AudioSource>();
         Destroy(_current);
     }
+    public void DestroySFX(AudioSource _current)
+    {
+        Destroy(_current);
+    }
+    public float GetSFXVolume()
+    {
+        AudioSource _current = GetComponent<AudioSource>();
 
+        DoesArcObjExist();
+
+        return _current.volume;
+    }
+    public float GetSFXVolume(AudioSource _current)
+    {
+        return _current.volume;
+    }
     public void SetSFXVolume(float _volume)
     {
         AudioSource _current = GetComponent<AudioSource>();
@@ -133,7 +148,33 @@ public class AudioClipRandomizer : MonoBehaviour
 
         _current.volume = _volume;
     }
-
+    public void SetSFXVolume(float _volume, AudioSource _current)
+    {
+        _current.volume = _volume;
+    }
+    public bool IsSFXPlaying()
+    {
+        AudioSource _current = GetComponent<AudioSource>();
+        return _current.isPlaying;
+    }
+    public bool SFXStartedPlaying()
+    {
+        //AudioSource _current = GetComponent<AudioSource>();
+        if (GetSFXPlayPosition() <= 0.1f)
+            return true;
+        return false;
+    }
+    public bool IsSFXDonePlaying()
+    {
+        if ((GetSFXLength()[0] > GetSFXPlayPosition()) || !IsSFXPlaying())
+            return false;
+        return true;
+    }
+    public float GetSFXPlayPosition()
+    {
+        AudioSource _current = GetComponent<AudioSource>();
+        return _current.time;
+    }
     public float[] GetSFXLength()
     {
         float[] _lengths = new float[_audioClips.Length];
@@ -177,5 +218,10 @@ public class AudioClipRandomizer : MonoBehaviour
     {
         _arcObj = _value;
         _arcChanged = true;
+    }
+    public string GetSFXName()
+    {
+        AudioSource _current = GetComponent<AudioSource>();
+        return _current.clip.name;
     }
 }

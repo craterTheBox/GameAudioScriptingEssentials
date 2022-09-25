@@ -7,9 +7,11 @@ public class Metronome : MonoBehaviour
 {
     [Header("Fields")]
     [Tooltip("Sound played on beat 1")]
-    [SerializeField] AudioClipRandomizer _beatOne;
+    [SerializeField] AudioRandomizerContainer _beatOneARC = null;
+    [HideInInspector] public AudioClipRandomizer _beatOne = null;
     [Tooltip("Sound played on every beat except beat 1")]
-    [SerializeField] AudioClipRandomizer _beat;
+    [SerializeField] AudioRandomizerContainer _beatARC;
+    [HideInInspector] public AudioClipRandomizer _beat;
     [Tooltip("Tempo of the clip in beats per minute")]
     [SerializeField] int _bpm = 120;
     [Tooltip("Top number of the time signature - the number of beats in one bar")]
@@ -19,9 +21,13 @@ public class Metronome : MonoBehaviour
 
     float _timeToNextBeat;
     float _timeToNextBar;
+    int _beatCount = 0;
 
     void Start()
     {
+        //_beatOne.SetAudioRandomizerContainer(_beatOneARC);
+        //_beat.SetAudioRandomizerContainer(_beatARC);
+
         if (_bottomTimeSignature == (1 ^ 2 ^ 4 ^ 8 ^ 16 ^ 32))
         {
             _timeToNextBeat = (60.0f / _bpm) / (_bottomTimeSignature / 4);
@@ -33,28 +39,30 @@ public class Metronome : MonoBehaviour
             Debug.LogError("WARNING: Metronome's note value is invalid");
     }
 
-    void FixedUpdate()
+    void Update()
     {
-        if (_bottomTimeSignature == (1 ^ 2 ^ 4 ^ 8 ^ 16 ^ 32))
+        if (_bottomTimeSignature % 2 == 0 ^ _bottomTimeSignature == 1)
         {
             _timeToNextBeat = (60.0f / _bpm) / (_bottomTimeSignature / 4);
             _timeToNextBar = _timeToNextBeat * _topTimeSignature;
         }
         else
-            Debug.LogError("WARNING: Metronome's note value is invalid");
+            Debug.LogError("WARNING: Metronome's note value is invalid: " + _bottomTimeSignature);
     }
 
     IEnumerator MetronomeTick()
     {
         while (true)
         {
-            _beatOne.PlaySFX();
+            _beatCount = 1;
+            //_beatOne.PlaySFX();
 
             yield return new WaitForSeconds(_timeToNextBeat);
 
             for (int i = 0; i < _topTimeSignature - 1; i++)
             {
-                _beat.PlaySFX();
+                _beatCount++;
+                //_beat.PlaySFX();
                 yield return new WaitForSeconds(_timeToNextBeat);
             }
         }
@@ -82,5 +90,9 @@ public class Metronome : MonoBehaviour
     public float TimeToNextBar
     {
         get => _timeToNextBar;
+    }
+    public int BeatCount
+    {
+        get => _beatCount;
     }
 }
