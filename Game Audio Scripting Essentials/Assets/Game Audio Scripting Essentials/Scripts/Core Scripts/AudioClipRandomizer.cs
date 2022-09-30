@@ -47,6 +47,7 @@ public class AudioClipRandomizer : MonoBehaviour
     int _lastIndex = -1;
     bool _arcObjExists = false;
     bool _arcChanged = false;
+    bool _initVolumeOverwritten = false;
 
     void Start()
     {
@@ -54,15 +55,6 @@ public class AudioClipRandomizer : MonoBehaviour
         //Ensures that if this is done on a single clip it will repeat
         if (!_arcObjExists && _audioClips.Length == 1)
             _noRepeats = false;
-    }
-
-    void Update()
-    {
-        //If the countainer changed, switch to a new audio source
-        if (_arcChanged)
-        {
-
-        }
     }
 
     public void PlaySFX()
@@ -95,7 +87,10 @@ public class AudioClipRandomizer : MonoBehaviour
             if (_arcObj.RandomPitch || (_overrideArcSettings && _randomPitch))
                 _pitch = (_overrideArcSettings) ? Random.Range(_minPitch, _maxPitch) : Random.Range(_arcObj.MinPitch, _arcObj.MaxPitch);
 
-            _volume = _arcObj.Volume;
+            if (!_initVolumeOverwritten)
+                _volume = _arcObj.Volume;
+            _initVolumeOverwritten = false;
+
             _mixerGroup = (_overrideArcSettings) ? _mixerGroup : _arcObj.MixerGroup;
             _loop = (_overrideArcSettings) ? _loop : _arcObj.Loop;
             _priority = (_overrideArcSettings) ? _priority : _arcObj.Priority;
@@ -119,6 +114,11 @@ public class AudioClipRandomizer : MonoBehaviour
         if (!_loop)
             Destroy(_newAudioSource, _clip.length + 0.2f);
     }
+    public void StopSFX()
+    {
+        AudioSource _current = GetComponent<AudioSource>();
+        _current.Stop();
+    }
     public void DestroySFX()
     {
         AudioSource _current = GetComponent<AudioSource>();
@@ -140,17 +140,27 @@ public class AudioClipRandomizer : MonoBehaviour
     {
         return _current.volume;
     }
-    public void SetSFXVolume(float _volume)
+    public void SetSFXVolume(float _newVolume)
     {
         AudioSource _current = GetComponent<AudioSource>();
 
         DoesArcObjExist();
 
-        _current.volume = _volume;
+        _current.volume = _newVolume;
     }
-    public void SetSFXVolume(float _volume, AudioSource _current)
+    public void SetSFXVolume(float _newVolume, AudioSource _current)
     {
-        _current.volume = _volume;
+        _current.volume = _newVolume;
+    }
+    public void SetSFXVolume(float _newVolume, int _index)
+    {
+        AudioSource _current = GetComponents<AudioSource>()[_index];
+        _current.volume = _newVolume;
+    }
+    public void SetSFXClipVolume(float _newVolume)
+    {
+        _volume = _newVolume;
+        _initVolumeOverwritten = true;
     }
     public bool IsSFXPlaying()
     {
