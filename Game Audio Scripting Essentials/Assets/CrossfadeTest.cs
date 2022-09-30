@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,7 +6,11 @@ using UnityEngine;
 public class CrossfadeTest : MonoBehaviour
 {
     [SerializeField] AudioClipRandomizer m_clipSectionOne;
-    [SerializeField] AudioClipRandomizer m_clipSectionTwo;
+    //[SerializeField] 
+    GameObject buffer;
+    AudioClipRandomizer m_clipSectionTwo;
+    [SerializeField] AudioClipRandomizer[] m_audioLayer;
+    [SerializeField] AudioRandomizerContainer[] m_sections;
 
     bool isPlayingTrackOne = true;
     bool isRunningCrossfade = false;
@@ -13,6 +18,14 @@ public class CrossfadeTest : MonoBehaviour
 
     void Start()
     {
+        buffer = new GameObject("Section 2");
+        buffer.transform.SetParent(transform);
+
+        m_clipSectionTwo = buffer.AddComponent<AudioClipRandomizer>();
+        
+        m_clipSectionTwo.SetAudioRandomizerContainer(m_sections[1]);
+        m_clipSectionTwo.SetOverrideArcSettings(false);
+
         if (isPlayingTrackOne)
             m_clipSectionOne.PlaySFX();
     }

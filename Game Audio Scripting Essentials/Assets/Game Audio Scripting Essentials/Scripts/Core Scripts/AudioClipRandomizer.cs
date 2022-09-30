@@ -80,9 +80,9 @@ public class AudioClipRandomizer : MonoBehaviour
         {
             if (_arcObj.NoRepeats)
                 while (_lastIndex == _index)
-                    _index = Random.Range(0, _arcObj.GetAudioClips().Length);
+                    _index = Random.Range(0, _arcObj.AudioClips.Length);
 
-            _clip = _arcObj.GetAudioClips()[_index];
+            _clip = _arcObj.AudioClips[_index];
 
             if (_arcObj.RandomPitch || (_overrideArcSettings && _randomPitch))
                 _pitch = (_overrideArcSettings) ? Random.Range(_minPitch, _maxPitch) : Random.Range(_arcObj.MinPitch, _arcObj.MaxPitch);
@@ -113,6 +113,16 @@ public class AudioClipRandomizer : MonoBehaviour
 
         if (!_loop)
             Destroy(_newAudioSource, _clip.length + 0.2f);
+    }
+    public void PlayPreExistingSFX()
+    {
+        AudioSource _current = GetComponent<AudioSource>();
+        _current.Play();
+    }
+    public void PlayPreExistingSFX(int _index)
+    {
+        AudioSource _current = GetComponents<AudioSource>()[_index];
+        _current.Play();
     }
     public void StopSFX()
     {
@@ -195,7 +205,7 @@ public class AudioClipRandomizer : MonoBehaviour
             for (int i = 0; i < _audioClips.Length; i++)
                 _lengths[i] = _audioClips[i].length;
         else
-            for (int i = 0; i < _arcObj.GetAudioClips().Length; i++)
+            for (int i = 0; i < _arcObj.AudioClips.Length; i++)
                 _lengths[i] = _arcObj.GetLength(i);
 
         return _lengths;
@@ -216,7 +226,7 @@ public class AudioClipRandomizer : MonoBehaviour
         if (_arcObj != null)
         {
             _arcObjExists = true;
-            if (_arcObj.GetAudioClips().Length == 1)
+            if (_arcObj.AudioClips.Length == 1)
                 _arcObj.NoRepeats = false;
         }
     }
@@ -229,9 +239,18 @@ public class AudioClipRandomizer : MonoBehaviour
         _arcObj = _value;
         _arcChanged = true;
     }
+    public void SetAudioClips(AudioClip[] _clips)
+    {
+        _audioClips = _clips;
+        _arcObjExists = false;
+    }
     public string GetSFXName()
     {
         AudioSource _current = GetComponent<AudioSource>();
         return _current.clip.name;
+    }
+    public void SetOverrideArcSettings(bool _value)
+    {
+        _overrideArcSettings = _value;
     }
 }

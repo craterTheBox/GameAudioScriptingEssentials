@@ -39,9 +39,10 @@ public class AudioRandomizerContainer : ScriptableObject
     [Range(0.0f, 1.0f)]
     [SerializeField] float _spatialBlend = 0.0f;
 
-    public AudioClip[] GetAudioClips()
+    public AudioClip[] AudioClips
     {
-        return _audioClips;
+        get => _audioClips;
+        set => _audioClips = value;
     }
     public float[] GetLengths()
     {
