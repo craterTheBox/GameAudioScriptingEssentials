@@ -105,11 +105,11 @@ public class CrossfadeTestBigScaleBaby : MonoBehaviour
     //If no transition state at that index exists, it will not transition. 
     public void TransitionSection(int _transitionIndex)
     {
-        /*if (_sections[_currentSection].SectionTransitions.Length >= _transitionIndex)
+        if (_sections[_currentSection].SectionTransitions.Length <= _transitionIndex)
         {
             Debug.LogWarning("WARNING: Transition Index does not exist. Continuing on this section.");
             return;
-        }//*/
+        }
 
         int newSection = _sections[_currentSection].SectionTransitions[_transitionIndex].TransitionInto;
 
