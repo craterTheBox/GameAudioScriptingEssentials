@@ -1,45 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditorInternal;
 using UnityEngine;
-
-[Serializable] public class Section
-{
-    [HideInInspector] public AudioClipRandomizer[] _audioLayerACR;
-    [HideInInspector] public GameObject[] _layerObject;
-    [SerializeField] Layer[] _audioLayers;
-    [Tooltip("Transitions out of this section")]
-    [SerializeField] SectionTransitions[] _sectionTransitions;
-
-    public Layer[] AudioLayers
-    {
-        get => _audioLayers;
-    }
-    public int AudioLayerCount() => _audioLayers.Length;
-    public SectionTransitions[] SectionTransitions => _sectionTransitions;
-}
-[Serializable] public class Layer
-{
-    [Tooltip("Audio Randomizer Container scriptable object with the audio clips")]
-    [SerializeField] AudioRandomizerContainer _arcObj;
-    [Tooltip("Audio clip assets, replacing the need for an Audio Randomizer Container object")]
-    [SerializeField] AudioClip[] _audioClips;
-    [Tooltip("Volume of the audio layer")]
-    [Range(0.0f, 1.0f)]
-    [SerializeField] public float _audioLayerVolumes = 1.0f;
-
-    public AudioRandomizerContainer ArcObj
-    {
-        get => _arcObj;
-        set => _arcObj = value;
-    }
-    public AudioClip[] AudioClips
-    {
-        get => _audioClips;
-    }
-}
 
 public class CrossfadeTestBigScaleBaby : MonoBehaviour
 {
@@ -57,22 +18,16 @@ public class CrossfadeTestBigScaleBaby : MonoBehaviour
     {
         for (int i = 0; i < _sections[_newSection].AudioLayers.Length; i++)
         {
-            //Uses the ARC Object by default if one is available
-            if (_sections[_newSection].AudioLayers[i].ArcObj != null)
-            {
-
-            }
-            else if (_sections[_newSection].AudioLayers[i].AudioClips != null)
+            //If no ARC Object, this will create one using the clips provided (granted, with default settings)
+            if (_sections[_newSection].AudioLayers[i].ArcObj == null && _sections[_newSection].AudioLayers[i].AudioClips != null)
             {
                 _sections[_newSection].AudioLayers[i].ArcObj = ScriptableObject.CreateInstance<AudioRandomizerContainer>();
                 _sections[_newSection].AudioLayers[i].ArcObj.AudioClips = _sections[_newSection].AudioLayers[i].AudioClips;
                 //Now it has an ARC Object. You're welcome
-
-                //TODO: All the ARC Object stuff here
             }
             else
             {
-                Debug.LogWarning("You gotta add sounds chief");
+                Debug.LogWarning("WARNING: No audio clips or Audio Randomizer Container found.");
             }
         }
 
@@ -81,23 +36,15 @@ public class CrossfadeTestBigScaleBaby : MonoBehaviour
 
         for (int i = 0; i < _sections[_newSection].AudioLayers.Length; i++)
         {
-            //Uses the ARC Object by default if one is available
-            if (_sections[_newSection].AudioLayers[i].ArcObj != null)
-            {
-                string _name = "Section " + _newSection + ", Layer " + i;
+            string _name = "Section " + _newSection + ", Layer " + i;
 
-                _sections[_newSection]._layerObject[i] = new GameObject(_name);
-                _sections[_newSection]._layerObject[i].transform.SetParent(transform);
-                _sections[_newSection]._audioLayerACR[i] = _sections[_newSection]._layerObject[i].AddComponent<AudioClipRandomizer>();
-                _sections[_newSection]._audioLayerACR[i].SetAudioRandomizerContainer(_sections[_newSection].AudioLayers[i].ArcObj);
-                _sections[_newSection]._audioLayerACR[i].SetOverrideArcSettings(false);
-                _sections[_newSection]._audioLayerACR[i].PlaySFX();
-                _sections[_newSection]._audioLayerACR[i].SetSFXVolume(_sections[_newSection].AudioLayers[i]._audioLayerVolumes);
-            }
-            else
-            {
-                Debug.LogWarning("You gotta add sounds chief part 2");
-            }
+            _sections[_newSection]._layerObject[i] = new GameObject(_name);
+            _sections[_newSection]._layerObject[i].transform.SetParent(transform);
+            _sections[_newSection]._audioLayerACR[i] = _sections[_newSection]._layerObject[i].AddComponent<AudioClipRandomizer>();
+            _sections[_newSection]._audioLayerACR[i].SetAudioRandomizerContainer(_sections[_newSection].AudioLayers[i].ArcObj);
+            _sections[_newSection]._audioLayerACR[i].SetOverrideArcSettings(false);
+            _sections[_newSection]._audioLayerACR[i].PlaySFX();
+            _sections[_newSection]._audioLayerACR[i].SetSFXVolume(_sections[_newSection].AudioLayers[i]._audioLayerVolumes);
         }
     }
     
@@ -111,33 +58,31 @@ public class CrossfadeTestBigScaleBaby : MonoBehaviour
             return;
         }
 
-        int newSection = _sections[_currentSection].SectionTransitions[_transitionIndex].TransitionInto;
+        int _newSection = _sections[_currentSection].SectionTransitions[_transitionIndex].TransitionInto;
+        float _crossfadeTime = _sections[_currentSection].SectionTransitions[_transitionIndex].CrossfadeTime;
 
         if (!_isRunningCrossfade && !_isRunningCrossfadeCheck)
-            StartCoroutine(Crossfade(newSection));
+            StartCoroutine(Crossfade(_newSection, _crossfadeTime));
         else if (_isRunningCrossfade && !_isRunningCrossfadeCheck)
-            StartCoroutine(WaitForCrossfade(newSection));
+            StartCoroutine(WaitForCrossfade(_newSection, _crossfadeTime));
     }
 
-    IEnumerator Crossfade(int _newSection)
+    IEnumerator Crossfade(int _newSection, float _crossfadeTime)
     {
         _isRunningCrossfade = true;
 
-        float timeToFade = 1.0f;
-        float timeElapsed = 0.0f;
-
-        //
+        float _currentTime = 0.0f;
 
         InitializeSection(_newSection);
 
-        while (timeElapsed < timeToFade)
+        while (_currentTime < _crossfadeTime)
         {
             for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
             {
-                _sections[_newSection]._audioLayerACR[i].SetSFXVolume(Mathf.Lerp(0.0f, 1.0f, timeElapsed / timeToFade));
-                _sections[_currentSection]._audioLayerACR[i].SetSFXVolume(Mathf.Lerp(1.0f, 0.0f, timeElapsed / timeToFade));
+                _sections[_newSection]._audioLayerACR[i].SetSFXVolume(Mathf.Lerp(0.0f, 1.0f, _currentTime / _crossfadeTime));
+                _sections[_currentSection]._audioLayerACR[i].SetSFXVolume(Mathf.Lerp(1.0f, 0.0f, _currentTime / _crossfadeTime));
             }
-            timeElapsed += Time.deltaTime;
+            _currentTime += Time.deltaTime;
             yield return null;
         }
 
@@ -149,12 +94,12 @@ public class CrossfadeTestBigScaleBaby : MonoBehaviour
         _isRunningCrossfade = false;
         _currentSection = _newSection;
     }
-    IEnumerator WaitForCrossfade(int _newSection)
+    IEnumerator WaitForCrossfade(int _newSection, float _crossfadeTime)
     {
         _isRunningCrossfadeCheck = true;
         while (_isRunningCrossfade)
             yield return null;
         _isRunningCrossfadeCheck = false;
-        StartCoroutine(Crossfade(_newSection));
+        StartCoroutine(Crossfade(_newSection, _crossfadeTime));
     }
 }

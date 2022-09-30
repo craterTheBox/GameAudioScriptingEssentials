@@ -123,63 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &192633787
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 192633789}
-  - component: {fileID: 192633788}
-  m_Layer: 0
-  m_Name: Layer 2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &192633788
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 192633787}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d582541dd1aa69c459a6a8f1cae8ff08, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _arcObj: {fileID: 11400000, guid: 6634774cbbd392940acd6e7fee757381, type: 2}
-  _audioClips: []
-  _mixerGroup: {fileID: 8066621621054152313, guid: a7c9045f84b858a4584dfa2008459f86, type: 2}
-  _overrideArcSettings: 0
-  _noRepeats: 0
-  _randomPitch: 0
-  _minPitch: 0.5
-  _maxPitch: 1.5
-  _volume: 1
-  _loop: 1
-  _priority: 128
-  _stereoPan: 0
-  _spatialBlend: 0
---- !u!4 &192633789
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 192633787}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1120525771}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &286967436
 GameObject:
   m_ObjectHideFlags: 0
@@ -293,8 +236,8 @@ MonoBehaviour:
   OnZoneEnter:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1956165361}
-        m_TargetAssemblyTypeName: CrossfadeTestBigScaleBaby, Assembly-CSharp
+      - m_Target: {fileID: 1120525770}
+        m_TargetAssemblyTypeName: AdaptiveMusicContainer, Assembly-CSharp
         m_MethodName: TransitionSection
         m_Mode: 3
         m_Arguments:
@@ -308,8 +251,8 @@ MonoBehaviour:
   OnZoneLeave:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1956165361}
-        m_TargetAssemblyTypeName: CrossfadeTestBigScaleBaby, Assembly-CSharp
+      - m_Target: {fileID: 1120525770}
+        m_TargetAssemblyTypeName: AdaptiveMusicContainer, Assembly-CSharp
         m_MethodName: TransitionSection
         m_Mode: 3
         m_Arguments:
@@ -691,12 +634,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1120525770}
         m_TargetAssemblyTypeName: AdaptiveMusicContainer, Assembly-CSharp
-        m_MethodName: StateChange
+        m_MethodName: SetState
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 3
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -706,12 +649,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1120525770}
         m_TargetAssemblyTypeName: AdaptiveMusicContainer, Assembly-CSharp
-        m_MethodName: StateChange
+        m_MethodName: SetState
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -1003,7 +946,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1120525770}
         m_TargetAssemblyTypeName: AdaptiveMusicContainer, Assembly-CSharp
-        m_MethodName: Transition
+        m_MethodName: TransitionSection
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1018,7 +961,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1120525770}
         m_TargetAssemblyTypeName: AdaptiveMusicContainer, Assembly-CSharp
-        m_MethodName: Transition
+        m_MethodName: TransitionSection
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1262,14 +1205,13 @@ GameObject:
   m_Component:
   - component: {fileID: 1120525771}
   - component: {fileID: 1120525770}
-  - component: {fileID: 1120525772}
   m_Layer: 0
   m_Name: Adaptive Music System
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1120525770
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1286,55 +1228,73 @@ MonoBehaviour:
   _timeSignatureTop: 4
   _timeSignatureBottom: 4
   _sections:
-  - _audioLayer: {fileID: 2094592335}
-    _audioLayerVolumes: 1
-    _arcObj:
-    - {fileID: 11400000, guid: 45ac989cf65717a42b2a484352637c98, type: 2}
-    - {fileID: 11400000, guid: 20a7911b792e3454797826433698c495, type: 2}
+  - _audioLayerACR: []
+    _layerObject: []
+    _audioLayers:
+    - _arcObj: {fileID: 11400000, guid: 45ac989cf65717a42b2a484352637c98, type: 2}
+      _audioClips: []
+      _audioLayerVolumes: 1
+    - _arcObj: {fileID: 11400000, guid: 6634774cbbd392940acd6e7fee757381, type: 2}
+      _audioClips: []
+      _audioLayerVolumes: 1
+    - _arcObj: {fileID: 11400000, guid: a80358e7d5cbaa040bf16436a948725c, type: 2}
+      _audioClips: []
+      _audioLayerVolumes: 1
     _sectionTransitions:
     - _transitionInto: 1
       _fadeType: 0
       _triggerType: 1
       _quantization: 0
+      _crossfadeTime: 1
     - _transitionInto: 1
       _fadeType: 1
       _triggerType: 1
       _quantization: 0
-  - _audioLayer: {fileID: 192633788}
-    _audioLayerVolumes: 0
-    _arcObj:
-    - {fileID: 11400000, guid: 6634774cbbd392940acd6e7fee757381, type: 2}
-    - {fileID: 11400000, guid: 73e2be259fbaa7d44a04d6d369c5370c, type: 2}
+      _crossfadeTime: 1
+  - _audioLayerACR: []
+    _layerObject: []
+    _audioLayers:
+    - _arcObj: {fileID: 11400000, guid: 20a7911b792e3454797826433698c495, type: 2}
+      _audioClips: []
+      _audioLayerVolumes: 1
+    - _arcObj: {fileID: 11400000, guid: 73e2be259fbaa7d44a04d6d369c5370c, type: 2}
+      _audioClips: []
+      _audioLayerVolumes: 1
+    - _arcObj: {fileID: 11400000, guid: e52134faae26d124a9c7c1bcdd80c6c7, type: 2}
+      _audioClips: []
+      _audioLayerVolumes: 1
     _sectionTransitions:
     - _transitionInto: 0
       _fadeType: 0
       _triggerType: 0
       _quantization: 0
+      _crossfadeTime: 1
     - _transitionInto: 0
       _fadeType: 1
       _triggerType: 1
       _quantization: 0
-  - _audioLayer: {fileID: 1716608057}
-    _audioLayerVolumes: 1
-    _arcObj:
-    - {fileID: 11400000, guid: a80358e7d5cbaa040bf16436a948725c, type: 2}
-    - {fileID: 11400000, guid: e52134faae26d124a9c7c1bcdd80c6c7, type: 2}
-    _sectionTransitions: []
+      _crossfadeTime: 1
   _initialSection: 0
   _states:
   - _stateAudioLayerVolumes:
     - 1
     - 0
     - 0
+    _gradualStateChange: 1
+    _gradualStateChangeTime: 1
   - _stateAudioLayerVolumes:
     - 1
     - 1
     - 0
+    _gradualStateChange: 1
+    _gradualStateChangeTime: 1
   - _stateAudioLayerVolumes:
     - 1
     - 1
     - 1
-  _initialState: 1
+    _gradualStateChange: 1
+    _gradualStateChangeTime: 1
+  _initialState: 0
   _ignoreWarnings: 0
   _numbersToChangeState: 1
   _playMetronome: 1
@@ -1349,32 +1309,10 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2094592334}
-  - {fileID: 192633789}
-  - {fileID: 1716608058}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1120525772
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1120525769}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd469aa5aec928b46a43dddf83bc9f2a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _beatOneARC: {fileID: 11400000, guid: 4809db6fdd89eff4aa5555136e006d44, type: 2}
-  _beatOne: {fileID: 0}
-  _beatARC: {fileID: 11400000, guid: 0fe74ec734cb98e4e92178cc13972861, type: 2}
-  _beat: {fileID: 0}
-  _bpm: 120
-  _topTimeSignature: 4
-  _bottomTimeSignature: 4
 --- !u!1 &1161597232
 GameObject:
   m_ObjectHideFlags: 0
@@ -1662,12 +1600,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1120525770}
         m_TargetAssemblyTypeName: AdaptiveMusicContainer, Assembly-CSharp
-        m_MethodName: StateChange
+        m_MethodName: SetState
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -1677,12 +1615,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1120525770}
         m_TargetAssemblyTypeName: AdaptiveMusicContainer, Assembly-CSharp
-        m_MethodName: StateChange
+        m_MethodName: SetState
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -2224,63 +2162,6 @@ Transform:
   m_Father: {fileID: 1674663185}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1716608056
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1716608058}
-  - component: {fileID: 1716608057}
-  m_Layer: 0
-  m_Name: Layer 3
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1716608057
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1716608056}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d582541dd1aa69c459a6a8f1cae8ff08, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _arcObj: {fileID: 11400000, guid: a80358e7d5cbaa040bf16436a948725c, type: 2}
-  _audioClips: []
-  _mixerGroup: {fileID: 8066621621054152313, guid: a7c9045f84b858a4584dfa2008459f86, type: 2}
-  _overrideArcSettings: 0
-  _noRepeats: 0
-  _randomPitch: 0
-  _minPitch: 0.5
-  _maxPitch: 1.5
-  _volume: 1
-  _loop: 1
-  _priority: 128
-  _stereoPan: 0
-  _spatialBlend: 0
---- !u!4 &1716608058
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1716608056}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1120525771}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1779493424
 GameObject:
   m_ObjectHideFlags: 0
@@ -2684,7 +2565,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1956165361
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2715,6 +2596,7 @@ MonoBehaviour:
       _fadeType: 0
       _triggerType: 0
       _quantization: 0
+      _crossfadeTime: 1
   - _audioLayerACR: []
     _layerObject: []
     _audioLayers:
@@ -2732,6 +2614,7 @@ MonoBehaviour:
       _fadeType: 0
       _triggerType: 0
       _quantization: 0
+      _crossfadeTime: 1
   _initialSection: 0
 --- !u!4 &1956165362
 Transform:
@@ -2842,63 +2725,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &2094592333
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2094592334}
-  - component: {fileID: 2094592335}
-  m_Layer: 0
-  m_Name: Layer 1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2094592334
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2094592333}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1120525771}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2094592335
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2094592333}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d582541dd1aa69c459a6a8f1cae8ff08, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _arcObj: {fileID: 11400000, guid: 45ac989cf65717a42b2a484352637c98, type: 2}
-  _audioClips: []
-  _mixerGroup: {fileID: 8066621621054152313, guid: a7c9045f84b858a4584dfa2008459f86, type: 2}
-  _overrideArcSettings: 0
-  _noRepeats: 0
-  _randomPitch: 0
-  _minPitch: 0.5
-  _maxPitch: 1.5
-  _volume: 1
-  _loop: 1
-  _priority: 128
-  _stereoPan: 0
-  _spatialBlend: 0
 --- !u!1001 &1117508114987536328
 PrefabInstance:
   m_ObjectHideFlags: 0
