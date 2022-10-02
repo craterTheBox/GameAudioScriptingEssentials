@@ -146,13 +146,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d582541dd1aa69c459a6a8f1cae8ff08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _audioSource: {fileID: 0}
-  _audioClips: []
   _arcObj: {fileID: 11400000, guid: 5f631b5da21d1604bba4eb0018e5ac70, type: 2}
+  _audioClips: []
   _mixerGroup: {fileID: -2520782407392915793, guid: a7c9045f84b858a4584dfa2008459f86, type: 2}
   _overrideArcSettings: 0
   _noRepeats: 1
   _randomPitch: 1
   _minPitch: 0.8
   _maxPitch: 1.2
+  _volume: 1
   _loop: 0
+  _priority: 128
+  _stereoPan: 0
+  _spatialBlend: 1

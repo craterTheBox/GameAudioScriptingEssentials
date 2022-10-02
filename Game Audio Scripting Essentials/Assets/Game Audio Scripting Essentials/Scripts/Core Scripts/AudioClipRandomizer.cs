@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -44,6 +45,7 @@ public class AudioClipRandomizer : MonoBehaviour
     int _lastIndex = -1;
     bool _arcObjExists = false;
     bool _initVolumeOverwritten = false;
+    bool _isRunningCheck = false;
 
     void Start()
     {
@@ -127,11 +129,33 @@ public class AudioClipRandomizer : MonoBehaviour
         {
             Destroy(_newAudioSource, _clip.length + 0.2f);
         }
-        else if (_loop && _audioClips.Length > 1 || _arcObj.AudioClips.Length > 1)
+        else if (_loop && _arcObjExists && !_isRunningCheck)
         {
-            Destroy(_newAudioSource, _clip.length + 0.2f);
-            PlaySFX();
+            if (_arcObj.AudioClips.Length > 1)
+            {
+                StartCoroutine(WaitForClipToFinish());
+            }
         }
+        else if (_loop && !_arcObjExists && !_isRunningCheck)
+        {
+            if (_audioClips.Length > 1)
+            {
+                StartCoroutine(WaitForClipToFinish());
+            }
+        }
+    }
+    IEnumerator WaitForClipToFinish()
+    {
+        _isRunningCheck = true;
+
+        while (SFXPlayPosition < GetSFXLength())
+        {
+            yield return null;
+        }
+        Destroy(GetComponent<AudioSource>(), GetSFXLength());
+        PlaySFX();
+
+        _isRunningCheck = false;
     }
     public void PlayPreExistingSFX()
     {

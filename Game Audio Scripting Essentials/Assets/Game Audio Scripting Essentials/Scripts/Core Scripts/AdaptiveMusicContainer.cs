@@ -106,8 +106,8 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
     [Space]
     [Header("Debug")]
+    [Tooltip("Warnings will not appear in the console when toggled on.")]
     [SerializeField] bool _ignoreWarnings = false;
-    [SerializeField] bool _numbersToChangeState = true;
 
     void Start()
     {
@@ -191,7 +191,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
     public void SetState(int _newState)
     {
         //Sets the current state of the layers
-        if (_states[_newState] == null)
+        if (_newState >= _states.Length)
         {
             for (int i = 0; i < _states[_currentState]._stateAudioLayerVolumes.Length; i++)
             {
@@ -304,6 +304,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
                     {
                         Destroy(_sections[_currentSection]._layerObject[i]);
                     }
+                    _currentSection = _newSection;
                 }
                 //Quant: All Others
                 else
@@ -428,7 +429,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
         for (int i = 0; i < _sections[_newSection]._layerObject.Length; i++)
         {
-            Destroy(_sections[_currentSection]._layerObject[i], 1.0f);
+            Destroy(_sections[_currentSection]._layerObject[i]);
         }
 
         _isRunningCrossfade = false;
