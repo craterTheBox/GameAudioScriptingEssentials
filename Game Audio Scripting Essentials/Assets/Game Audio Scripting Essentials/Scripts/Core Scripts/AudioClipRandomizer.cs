@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -14,7 +12,6 @@ public class AudioClipRandomizer : MonoBehaviour
     [SerializeField] AudioClip[] _audioClips;
     [Tooltip("Audio Mixer Group that these audio clips will be routed to")]
     [SerializeField] AudioMixerGroup _mixerGroup;
-    AudioSource _audioSource;
 
     [Header("Settings")]
     [Tooltip("Toggle to override Audio Randomizer Container settings with the settings below")]
@@ -46,7 +43,6 @@ public class AudioClipRandomizer : MonoBehaviour
 
     int _lastIndex = -1;
     bool _arcObjExists = false;
-    bool _arcChanged = false;
     bool _initVolumeOverwritten = false;
 
     void Start()
@@ -54,9 +50,10 @@ public class AudioClipRandomizer : MonoBehaviour
         DoesArcObjExist();
         //Ensures that if this is done on a single clip it will repeat
         if (!_arcObjExists && _audioClips.Length == 1)
+        {
             _noRepeats = false;
+        }
     }
-
     public void PlaySFX()
     {
         int _index = 0;
@@ -68,27 +65,42 @@ public class AudioClipRandomizer : MonoBehaviour
         if (!_arcObjExists)
         {
             if (_noRepeats)
+            {
                 while (_lastIndex == _index)
+                {
                     _index = Random.Range(0, _audioClips.Length);
+                }
+            }
 
             _clip = _audioClips[_index];
 
             if (_randomPitch)
+            {
                 _pitch = Random.Range(_minPitch, _maxPitch);
+            }
         }
         else
         {
             if (_arcObj.NoRepeats)
+            {
                 while (_lastIndex == _index)
+                {
                     _index = Random.Range(0, _arcObj.AudioClips.Length);
+                }
+            }
 
             _clip = _arcObj.AudioClips[_index];
 
             if (_arcObj.RandomPitch || (_overrideArcSettings && _randomPitch))
+            {
                 _pitch = (_overrideArcSettings) ? Random.Range(_minPitch, _maxPitch) : Random.Range(_arcObj.MinPitch, _arcObj.MaxPitch);
+            }
 
             if (!_initVolumeOverwritten)
+            {
                 _volume = _arcObj.Volume;
+            }
+
             _initVolumeOverwritten = false;
 
             _mixerGroup = (_overrideArcSettings) ? _mixerGroup : _arcObj.MixerGroup;
@@ -112,7 +124,14 @@ public class AudioClipRandomizer : MonoBehaviour
         _newAudioSource.Play();
 
         if (!_loop)
+        {
             Destroy(_newAudioSource, _clip.length + 0.2f);
+        }
+        else if (_loop && _audioClips.Length > 1 || _arcObj.AudioClips.Length > 1)
+        {
+            Destroy(_newAudioSource, _clip.length + 0.2f);
+            PlaySFX();
+        }
     }
     public void PlayPreExistingSFX()
     {
@@ -134,79 +153,42 @@ public class AudioClipRandomizer : MonoBehaviour
         AudioSource _current = GetComponent<AudioSource>();
         Destroy(_current);
     }
-    public void DestroySFX(AudioSource _current)
+    public float SFXVolume
     {
-        Destroy(_current);
-    }
-    public float GetSFXVolume()
-    {
-        AudioSource _current = GetComponent<AudioSource>();
-
-        DoesArcObjExist();
-
-        return _current.volume;
-    }
-    public float GetSFXVolume(AudioSource _current)
-    {
-        return _current.volume;
-    }
-    public void SetSFXVolume(float _newVolume)
-    {
-        AudioSource _current = GetComponent<AudioSource>();
-
-        DoesArcObjExist();
-
-        _current.volume = _newVolume;
-    }
-    public void SetSFXVolume(float _newVolume, AudioSource _current)
-    {
-        _current.volume = _newVolume;
-    }
-    public void SetSFXVolume(float _newVolume, int _index)
-    {
-        AudioSource _current = GetComponents<AudioSource>()[_index];
-        _current.volume = _newVolume;
-    }
-    public void SetSFXClipVolume(float _newVolume)
-    {
-        _volume = _newVolume;
-        _initVolumeOverwritten = true;
+        get => GetComponent<AudioSource>().volume;
+        set => GetComponent<AudioSource>().volume = value;
     }
     public bool IsSFXPlaying()
     {
         AudioSource _current = GetComponent<AudioSource>();
         return _current.isPlaying;
     }
-    public bool SFXStartedPlaying()
-    {
-        //AudioSource _current = GetComponent<AudioSource>();
-        if (GetSFXPlayPosition() <= 0.1f)
-            return true;
-        return false;
-    }
-    public bool IsSFXDonePlaying()
-    {
-        if ((GetSFXLength()[0] > GetSFXPlayPosition()) || !IsSFXPlaying())
-            return false;
-        return true;
-    }
-    public float GetSFXPlayPosition()
+    public float SFXPlayPosition => GetComponent<AudioSource>().time;
+    public float GetSFXLength()
     {
         AudioSource _current = GetComponent<AudioSource>();
-        return _current.time;
+        return _current.clip.length;
     }
-    public float[] GetSFXLength()
+    public float[] GetSFXLengths()
     {
         float[] _lengths = new float[_audioClips.Length];
 
         DoesArcObjExist();
 
         if (!_arcObjExists)
+        {
             for (int i = 0; i < _audioClips.Length; i++)
+            {
                 _lengths[i] = _audioClips[i].length;
+            }
+        }
         else
+        {
             for (int i = 0; i < _arcObj.AudioClips.Length; i++)
+            {
                 _lengths[i] = _arcObj.GetLength(i);
+            }
+        }
 
         return _lengths;
     }
@@ -214,10 +196,24 @@ public class AudioClipRandomizer : MonoBehaviour
     {
         float averageLength = -1.0f;
 
-        for (int i = 0; i < _audioClips.Length; i++)
-            averageLength += _audioClips[i].length;
+        if (!_arcObjExists)
+        {
+            for (int i = 0; i < _audioClips.Length; i++)
+            {
+                averageLength += _audioClips[i].length;
+            }
 
-        averageLength /= _audioClips.Length;
+            averageLength /= _audioClips.Length;
+        }
+        else
+        {
+            for (int i = 0; i < _arcObj.AudioClips.Length; i++)
+            {
+                averageLength += _arcObj.GetLength(i);
+            }
+
+            averageLength /= _arcObj.AudioClips.Length;
+        }
 
         return averageLength;
     }
@@ -227,17 +223,15 @@ public class AudioClipRandomizer : MonoBehaviour
         {
             _arcObjExists = true;
             if (_arcObj.AudioClips.Length == 1)
+            {
                 _arcObj.NoRepeats = false;
+            }
         }
     }
-    public AudioRandomizerContainer GetAudioRandomizerContainer()
+    public AudioRandomizerContainer ArcObj
     {
-        return _arcObj;
-    }
-    public void SetAudioRandomizerContainer(AudioRandomizerContainer _value)
-    {
-        _arcObj = _value;
-        _arcChanged = true;
+        get => _arcObj;
+        set => _arcObj = value;
     }
     public void SetAudioClips(AudioClip[] _clips)
     {
@@ -249,8 +243,10 @@ public class AudioClipRandomizer : MonoBehaviour
         AudioSource _current = GetComponent<AudioSource>();
         return _current.clip.name;
     }
-    public void SetOverrideArcSettings(bool _value)
+    public bool OverrideArcSettings
     {
-        _overrideArcSettings = _value;
+        get => _overrideArcSettings;
+        set => _overrideArcSettings = value;
     }
+    public bool Loop => _loop;
 }

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -49,7 +47,9 @@ public class AudioRandomizerContainer : ScriptableObject
         float[] _lengths = new float[_audioClips.Length];
 
         for (int i = 0; i < _audioClips.Length; i++)
+        {
             _lengths[i] = _audioClips[i].length;
+        }
 
         return _lengths;
     }

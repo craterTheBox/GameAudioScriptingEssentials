@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using static SectionTransitions;
 
 [Serializable] public class Section
 {
@@ -14,7 +15,6 @@ using UnityEngine;
     [SerializeField] SectionTransitions[] _sectionTransitions;
     public SectionTransitions[] SectionTransitions => _sectionTransitions;
 }
-
 [Serializable] public class Layer
 {
     [Tooltip("Audio Randomizer Container scriptable object with the audio clips")]
@@ -31,7 +31,6 @@ using UnityEngine;
     [Range(0.0f, 1.0f)]
     [SerializeField] public float _audioLayerVolumes = 1.0f;
 }
-
 [Serializable] public class States
 {
     [Tooltip("Set volume levels for each layer accordingly. This applies to all sections.")]
@@ -52,18 +51,18 @@ using UnityEngine;
     [Tooltip("This is the section that is transitioned into")]
     [SerializeField] int _transitionInto;
     public int TransitionInto => _transitionInto;
-    public enum TransitionFade { NoFade, Crossfade }
-    [Tooltip("Sets whether the transition crossfades the tracks or not.\n" +
-        "\nNoFade: Stops one clip and starts the other." +
-        "\nCrossfade: Blends both clips together, stops previous clip once silent.")]
-    [SerializeField] TransitionFade _fadeType;
-    public TransitionFade FadeType => _fadeType;
     public enum TransitionTrigger { OnEnd, OnTrigger }
     [Tooltip("Sets whether the transition happens when the audio clip ends or on a trigger.\n" +
         "\nOnEnd: Transitions when the audio clip ends. This setting only works when not looped." +
         "\nOnTrigger: Transitions when the transition is triggered.")]
     [SerializeField] TransitionTrigger _triggerType;
     public TransitionTrigger TriggerType => _triggerType;
+    public enum TransitionFade { NoFade, Crossfade }
+    [Tooltip("Sets whether the transition crossfades the tracks or not.\n" +
+        "\nNoFade: Stops one clip and starts the other." +
+        "\nCrossfade: Blends both clips together, stops previous clip once silent.")]
+    [SerializeField] TransitionFade _fadeType;
+    public TransitionFade FadeType => _fadeType;
     public enum TransitionQuantization { Immediate, OnNextBeat, OnNextSecondBeat, OnNextBar }
     [Tooltip("Sets whether the transition occurs immediately or on time with the tempo. This setting is bypassed by \"OnEnd\" trigger type.\n" +
         "\nImmediate: Immediately transitions sections." +
@@ -82,7 +81,7 @@ using UnityEngine;
 public class AdaptiveMusicContainer : MonoBehaviour
 {
     [Header("Audio Settings")]
-    [Tooltip("Tempo of the audio clip in beats per minute")]
+    [Tooltip("Tempo of the audio clip in beats per minute. This is required for quantization to work properly.")]
     [Range(0, 300)]
     [SerializeField] int _trackBPM = 120;
     [Tooltip("Number of beats per bar")]
@@ -91,14 +90,13 @@ public class AdaptiveMusicContainer : MonoBehaviour
     [Tooltip("Note value of the beats")]
     [Range(1, 32)]
     [SerializeField] int _timeSignatureBottom = 4;
-    //Metronome _metronome;
 
     [Header("Sections")]
     [SerializeField] Section[] _sections;
     [Tooltip("Initial section of the track")]
     [SerializeField] int _initialSection = 0;
     int _currentSection = 0;
-    bool _isRunningCrossfade, _isRunningCrossfadeCheck = false;
+    bool _isRunningCrossfade, _isRunningCrossfadeCheck, _isRunningQuantize, _isRunningQuantizeCheck = false;
 
     [Header("States")]
     [SerializeField] States[] _states;
@@ -110,30 +108,24 @@ public class AdaptiveMusicContainer : MonoBehaviour
     [Header("Debug")]
     [SerializeField] bool _ignoreWarnings = false;
     [SerializeField] bool _numbersToChangeState = true;
-    [SerializeField] bool _playMetronome = false;
 
     void Start()
     {
-        /*/Metronome
-        _metronome = GetComponent<Metronome>();
-        _metronome.BeatsPerMinute = _trackBPM;
-        _metronome.TopTimeSignature = _timeSignatureTop;
-        _metronome.BottomTimeSignature = _timeSignatureBottom;
-        //_metronome._beat.SetSFXVolume(_playMetronome ? 1.0f : 0.0f);
-        //_metronome._beatOne.SetSFXVolume(_playMetronome ? 1.0f : 0.0f);
-        //*/
-
         InitializeSection(_initialSection);
         _currentSection = _initialSection;
-        SetState(_initialState);
+        SetStateImmediate(_initialState);
     }
     void InitializeSection(int _newSection)
     {
         //Check for ARC Object or create one using the audio clips
         for (int i = 0; i < _sections[_newSection].AudioLayers.Length; i++)
         {
+            if (_sections[_newSection].AudioLayers[i].ArcObj.AudioClips.Length > 0)
+            {
+                break;
+            }
             //If no ARC Object, this will create one using the clips provided (granted, with default settings)
-            if (_sections[_newSection].AudioLayers[i].ArcObj.AudioClips.Length == 0 && _sections[_newSection].AudioLayers[i].AudioClips.Length != 0)
+            else if (_sections[_newSection].AudioLayers[i].ArcObj.AudioClips.Length == 0 && _sections[_newSection].AudioLayers[i].AudioClips.Length != 0)
             {
                 _sections[_newSection].AudioLayers[i].ArcObj = ScriptableObject.CreateInstance<AudioRandomizerContainer>();
                 _sections[_newSection].AudioLayers[i].ArcObj.AudioClips = _sections[_newSection].AudioLayers[i].AudioClips;
@@ -156,10 +148,18 @@ public class AdaptiveMusicContainer : MonoBehaviour
             _sections[_newSection]._layerObject[i] = new GameObject(_name);
             _sections[_newSection]._layerObject[i].transform.SetParent(transform);
             _sections[_newSection]._audioLayerACR[i] = _sections[_newSection]._layerObject[i].AddComponent<AudioClipRandomizer>();
-            _sections[_newSection]._audioLayerACR[i].SetAudioRandomizerContainer(_sections[_newSection].AudioLayers[i].ArcObj);
-            _sections[_newSection]._audioLayerACR[i].SetOverrideArcSettings(false);
+            _sections[_newSection]._audioLayerACR[i].ArcObj = _sections[_newSection].AudioLayers[i].ArcObj;
+            _sections[_newSection]._audioLayerACR[i].OverrideArcSettings = false;
             _sections[_newSection]._audioLayerACR[i].PlaySFX();
-            _sections[_newSection]._audioLayerACR[i].SetSFXVolume(_sections[_newSection].AudioLayers[i]._audioLayerVolumes);
+
+            if (_states.Length > 0)
+            {
+                _sections[_newSection]._audioLayerACR[i].SFXVolume = _states[_currentState].StateAudioLayerVolumes[i];
+            }
+            else
+            {
+                _sections[_newSection]._audioLayerACR[i].SFXVolume = _sections[_newSection].AudioLayers[i]._audioLayerVolumes;
+            }
         }
 
         //Checks if the layers are the same length
@@ -168,85 +168,75 @@ public class AdaptiveMusicContainer : MonoBehaviour
         for (int i = 0; i < _sections[_newSection].AudioLayers.Length; i++)
         {
             if (!_ignoreWarnings && _previousAverageLength != -1.0f && _previousAverageLength != _sections[_newSection]._audioLayerACR[i].GetSFXAverageLength())
-                Debug.LogWarning("WARNING: Audio Layers in obj \"" + this.name + "\" are at differing lengths. This is not a critical error.");
+            {
+                Debug.LogWarning("WARNING: Audio Layers in obj \"" + name + "\" are at differing lengths. This is not a critical error.");
+            }
             _previousAverageLength = _sections[_newSection]._audioLayerACR[i].GetSFXAverageLength();
         }
     }
 
     void Update()
     {
-        //Metronome
-        //_metronome._beat.SetSFXVolume((_playMetronome) ? 1.0f : 0.0f);
-        //_metronome._beatOne.SetSFXVolume((_playMetronome) ? 1.0f : 0.0f);
-
-        //State Change - VERTICAL
-        if (_numbersToChangeState)
+        //Checks for if the section has a transition trigger OnEnd
+        for (int i = 0; i < _sections[_currentSection].SectionTransitions.Length; i++)
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-                SetState(1);
-            else if (Input.GetKeyDown(KeyCode.Alpha2))
-                SetState(2);
-            else if (Input.GetKeyDown(KeyCode.Alpha3))
-                SetState(3);
-        }
-
-        //Section Transition - HORIZONTAL
-        if (_numbersToChangeState)
-        {
-            if (Input.GetKeyDown(KeyCode.Alpha4))
-                TransitionSection(1);
-            else if (Input.GetKeyDown(KeyCode.Alpha5))
-                TransitionSection(2);
-            else if (Input.GetKeyDown(KeyCode.Alpha6))
-                TransitionSection(3);
+            if (_sections[_currentSection].SectionTransitions[i].TriggerType == SectionTransitions.TransitionTrigger.OnEnd && !_sections[_currentSection]._audioLayerACR[0].Loop)
+            {
+                TransitionSection(i);
+                break;
+            }
         }
     }
 
     public void SetState(int _newState)
     {
         //Sets the current state of the layers
-        if (_states[_newState]._stateAudioLayerVolumes[0] != null)
+        if (_states[_newState] == null)
         {
             for (int i = 0; i < _states[_currentState]._stateAudioLayerVolumes.Length; i++)
             {
-                try
-                {
-                    _sections[_currentSection]._audioLayerACR[i].SetSFXVolume(_states[_currentState]._stateAudioLayerVolumes[i]);
-                }
-                catch (Exception)
-                {
-                    Debug.LogWarning("WARNING: Cannot set volume of current state.");
-                    throw;
-                }
+                _sections[_currentSection]._audioLayerACR[i].SFXVolume = _states[_currentState]._stateAudioLayerVolumes[i];
             }
         }
 
         //Abrupt state change
         if (!_states[_newState].GradualStateChange)
-            for (int i = 0; i < _sections.Length; i++)
-                _sections[_currentSection]._audioLayerACR[i].SetSFXVolume(_states[_newState]._stateAudioLayerVolumes[i]);
+        {
+            for (int i = 0; i < _sections[_currentSection].AudioLayerCount(); i++)
+            {
+                _sections[_currentSection]._audioLayerACR[i].SFXVolume = _states[_newState]._stateAudioLayerVolumes[i];
+            }
+        }
         else
         {
             //Gradual state change
-            IEnumerator GradualStateChange(int state)
+            IEnumerator GradualStateChange(int _newState)
             {
                 float _currentTime = 0.0f;
-                float[] currentVolume = new float[_sections.Length];
+                float[] _currentVolume = new float[_sections[_currentSection].AudioLayerCount()];
 
                 if (_currentState == 0)
-                    for (int i = 0; i < _sections.Length; i++)
-                        currentVolume[i] = _sections[_currentSection]._audioLayerACR[i].GetSFXVolume();
+                {
+                    for (int i = 0; i < _sections[_currentSection].AudioLayerCount(); i++)
+                    {
+                        _currentVolume[i] = _sections[_currentSection]._audioLayerACR[i].SFXVolume;
+                    }
+                }
                 else
-                    currentVolume = _states[_currentState]._stateAudioLayerVolumes;
-
+                {
+                    _currentVolume = _states[_currentState]._stateAudioLayerVolumes;
+                }
 
                 while (_currentTime < _states[_newState].GradualStateChangeTime)
                 {
-                    for (int i = 0; i < _sections.Length; i++)
+                    for (int i = 0; i < _sections[_currentSection].AudioLayerCount(); i++)
                     {
-                        if (currentVolume[i] != _states[_newState - 1]._stateAudioLayerVolumes[i])
-                            _sections[_currentSection]._audioLayerACR[i].SetSFXVolume(Mathf.Lerp(currentVolume[i], _states[_newState]._stateAudioLayerVolumes[i], _currentTime / _states[_newState].GradualStateChangeTime));
+                        if (_currentVolume[i] != _states[_newState]._stateAudioLayerVolumes[i])
+                        {
+                            _sections[_currentSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(_currentVolume[i], _states[_newState]._stateAudioLayerVolumes[i], _currentTime / _states[_newState].GradualStateChangeTime);
+                        }
                     }
+
                     _currentTime += Time.deltaTime;
 
                     yield return null;
@@ -256,6 +246,25 @@ public class AdaptiveMusicContainer : MonoBehaviour
             }
             StartCoroutine(GradualStateChange(_newState));
         }
+        _currentState = _newState;
+    }
+    public void SetStateImmediate(int _newState)
+    {
+        if (_states[_newState] == null)
+        {
+            for (int i = 0; i < _states[_currentState]._stateAudioLayerVolumes.Length; i++)
+            {
+                _sections[_currentSection]._audioLayerACR[i].SFXVolume = _states[_currentState]._stateAudioLayerVolumes[i];
+            }
+
+            return;
+        }
+        //Sets the initial volume abruptly
+        for (int i = 0; i < _sections[_currentSection].AudioLayerCount(); i++)
+        {
+            _sections[_currentSection]._audioLayerACR[i].SFXVolume = _states[_newState]._stateAudioLayerVolumes[i];
+        }
+
         _currentState = _newState;
     }
 
@@ -270,130 +279,129 @@ public class AdaptiveMusicContainer : MonoBehaviour
         }
 
         int _newSection = _sections[_currentSection].SectionTransitions[_transitionIndex].TransitionInto;
+        float _crossfadeTime = _sections[_currentSection].SectionTransitions[_transitionIndex].CrossfadeTime;
 
-        SectionTransitions.TransitionFade fadeType = _sections[_currentSection].SectionTransitions[_transitionIndex].FadeType;
         SectionTransitions.TransitionTrigger triggerType = _sections[_currentSection].SectionTransitions[_transitionIndex].TriggerType;
+        SectionTransitions.TransitionFade fadeType = _sections[_currentSection].SectionTransitions[_transitionIndex].FadeType;
         SectionTransitions.TransitionQuantization quantization = _sections[_currentSection].SectionTransitions[_transitionIndex].Quantization;
 
-        if (fadeType == SectionTransitions.TransitionFade.NoFade &&
-            triggerType == SectionTransitions.TransitionTrigger.OnTrigger &&
-            quantization == SectionTransitions.TransitionQuantization.Immediate)
+        //Trigger: OnTrigger
+        if (triggerType == SectionTransitions.TransitionTrigger.OnTrigger)
         {
-            for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
-            {
-                if (!_ignoreWarnings) 
-                    Debug.Log("NoFade, OnTrigger, Immediate.");
-                InitializeSection(_newSection);
-                Destroy(_sections[_currentSection]._audioLayerACR[i]);
-            }
-        }
-        //Everything else that isn't no fade, on trigger, and immediate
-        else
-        {
-            //FadeType: NoFade
+            //Fade: NoFade
             if (fadeType == SectionTransitions.TransitionFade.NoFade)
             {
-                //TriggerType: OnTrigger
-                if (triggerType == SectionTransitions.TransitionTrigger.OnTrigger)
-                {
-                    //Quantization: OnNextBeat
-                    if (quantization == SectionTransitions.TransitionQuantization.OnNextBeat)
-                    {
-                        if (!_ignoreWarnings) 
-                            Debug.Log("NoFade, OnEnd, OnNextBeat.");
-                    }
-                    //Quantization: OnNextSecondBeat
-                    else if (quantization == SectionTransitions.TransitionQuantization.OnNextSecondBeat)
-                    {
-                        if (!_ignoreWarnings) 
-                            Debug.Log("NoFade, OnEnd, OnNextSecondBeat.");
-                    }
-                    //Quantization: OnNextBar
-                    else if (quantization == SectionTransitions.TransitionQuantization.OnNextBar)
-                    {
-                        if (!_ignoreWarnings) 
-                            Debug.Log("NoFade, OnEnd, OnNextBar.");
-                    }
-                }
-                //TriggerType: OnEnd. Bypasses all Quantization settings
-                else if (triggerType == SectionTransitions.TransitionTrigger.OnEnd)
-                {
-                    IEnumerator NoFadeOnEnd()
-                    {
-                        while (_sections[_currentSection]._audioLayerACR[0].IsSFXPlaying())
-                        {
-                            yield return null;
-                        }
-                        for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
-                        {
-                            if (!_ignoreWarnings)
-                                Debug.Log("NoFade, OnEnd, Any Quantization.");
-                            InitializeSection(_newSection);
-                            Destroy(_sections[_currentSection]._audioLayerACR[i]);
-                        }
-                    }
-                    StartCoroutine(NoFadeOnEnd());
-                }
-            }
-            //FadeType: Crossfade
-            else if (fadeType == SectionTransitions.TransitionFade.Crossfade)
-            {
-                float _crossfadeTime = _sections[_currentSection].SectionTransitions[_transitionIndex].CrossfadeTime;
-
-                //TriggerType: OnTrigger
-                if (triggerType == SectionTransitions.TransitionTrigger.OnTrigger)
-                {
-                    //Quantization: OnNextBeat
-                    if (quantization == SectionTransitions.TransitionQuantization.OnNextBeat)
-                    {
-                        if (!_ignoreWarnings) 
-                            Debug.Log("Crossfade, OnEnd, OnNextBeat.");
-                    }
-                    //Quantization: OnNextSecondBeat
-                    else if (quantization == SectionTransitions.TransitionQuantization.OnNextSecondBeat)
-                    {
-                        if (!_ignoreWarnings) 
-                            Debug.Log("Crossfade, OnEnd, OnNextSecondBeat.");
-                    }
-                    //Quantization: OnNextBar
-                    else if (quantization == SectionTransitions.TransitionQuantization.OnNextBar)
-                    {
-                        if (!_ignoreWarnings) 
-                            Debug.Log("Crossfade, OnEnd, OnNextBar.");
-                    }
-                    //Quantization: Immediate
-                    else
-                    {
-                        if (!_isRunningCrossfade && !_isRunningCrossfadeCheck)
-                            StartCoroutine(Crossfade(_newSection, _crossfadeTime));
-                        else if (_isRunningCrossfade && !_isRunningCrossfadeCheck)
-                            StartCoroutine(WaitForCrossfade(_newSection, _crossfadeTime));
-                    }
-                }
-                //TriggerType: OnEnd. Bypasses all Quantization settings
-                else if (triggerType == SectionTransitions.TransitionTrigger.OnEnd)
-                {
-                    if (!_ignoreWarnings) 
-                        Debug.Log("Crossfade, OnEnd, any quant.");
-                }
-            }
-            //In case I forgot about anything, just play the damn thing
-            else
-            {
-                if (!_ignoreWarnings) 
-                    Debug.Log("You missed a case dummy");
-                for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+                //Quant: Immediate
+                if (quantization == SectionTransitions.TransitionQuantization.Immediate)
                 {
                     if (!_ignoreWarnings)
-                        Debug.Log("NoFade, OnTrigger, Immediate.");
+                    {
+                        Debug.Log("OnTrigger, NoFade, Immediate.");
+                    }
+
                     InitializeSection(_newSection);
-                    Destroy(_sections[_currentSection]._audioLayerACR[i]);
+                    for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+                    {
+                        Destroy(_sections[_currentSection]._layerObject[i]);
+                    }
+                }
+                //Quant: All Others
+                else
+                {
+                    if (!_ignoreWarnings)
+                    {
+                        Debug.Log("OnTrigger, NoFade, " + quantization);
+                    }
+
+                    if (!_isRunningQuantize && !_isRunningQuantizeCheck)
+                    {
+                        StartCoroutine(Quantize(_newSection, quantization, fadeType, _crossfadeTime));
+                    }
+                    else if (_isRunningQuantize && !_isRunningQuantizeCheck)
+                    {
+                        StartCoroutine(WaitForQuantize(_newSection, quantization, fadeType, _crossfadeTime));
+                    }
+                }
+            }
+            //Fade: Crossfade // 1/4
+            else if (fadeType == SectionTransitions.TransitionFade.Crossfade)
+            {
+                //Quant: Immediate // WORKS
+                if (quantization == SectionTransitions.TransitionQuantization.Immediate)
+                {
+                    if (!_ignoreWarnings)
+                    {
+                        Debug.Log("OnTrigger, Crossfade, Immediate.");
+                    }
+
+                    if (!_isRunningCrossfade && !_isRunningCrossfadeCheck)
+                    {
+                        StartCoroutine(Crossfade(_newSection, _crossfadeTime));
+                    }
+                    else if (_isRunningCrossfade && !_isRunningCrossfadeCheck)
+                    {
+                        StartCoroutine(WaitForCrossfade(_newSection, _crossfadeTime));
+                    }
+                }
+                //Quant: All Others
+                else
+                {
+                    if (!_ignoreWarnings)
+                    {
+                        Debug.Log("OnTrigger, Crossfade, " + quantization);
+                    }
+
+                    if (!_isRunningQuantize && !_isRunningQuantizeCheck)
+                    {
+                        StartCoroutine(Quantize(_newSection, quantization, fadeType, _crossfadeTime));
+                    }
+                    else if (_isRunningQuantize && !_isRunningQuantizeCheck)
+                    {
+                        StartCoroutine(WaitForQuantize(_newSection, quantization, fadeType, _crossfadeTime));
+                    }
                 }
             }
         }
+        //Trigger: OnEnd // 1/1
+        else if (triggerType == SectionTransitions.TransitionTrigger.OnEnd)
+        {
+            IEnumerator NoFadeOnEnd()
+            {
+                while (_sections[_currentSection]._audioLayerACR[0].IsSFXPlaying())
+                {
+                    yield return null;
+                }
 
-        SetState(_currentState);
-        _currentSection = _newSection;
+                if (!_ignoreWarnings)
+                {
+                    Debug.Log("NoFade, OnEnd, Any Quantization.");
+                }
+
+                InitializeSection(_newSection);
+                for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+                {
+                    Destroy(_sections[_currentSection]._layerObject[i]);
+                }
+
+                _currentSection = _newSection;
+                SetStateImmediate(_currentState);
+            }
+            StartCoroutine(NoFadeOnEnd());
+        }
+        //Failsafe // 1/1
+        else
+        {
+            if (!_ignoreWarnings)
+            {
+                Debug.Log("You missed a case, dummy");
+            }
+
+            InitializeSection(_newSection);
+            for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+            {
+                Destroy(_sections[_currentSection]._layerObject[i]);
+            }
+        }
     }
     IEnumerator Crossfade(int _newSection, float _crossfadeTime)
     {
@@ -407,24 +415,99 @@ public class AdaptiveMusicContainer : MonoBehaviour
         {
             for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
             {
-                _sections[_newSection]._audioLayerACR[i].SetSFXVolume(Mathf.Lerp(0.0f, 1.0f, _currentTime / _crossfadeTime));
-                _sections[_currentSection]._audioLayerACR[i].SetSFXVolume(Mathf.Lerp(1.0f, 0.0f, _currentTime / _crossfadeTime));
+                _sections[_newSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(0.0f, 1.0f * _states[_currentState].StateAudioLayerVolumes[i], _currentTime / _crossfadeTime);
+
+                if (_sections[_currentSection]._layerObject[i].GetComponent<AudioSource>())
+                {
+                    _sections[_currentSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(1.0f * _states[_currentState].StateAudioLayerVolumes[i], 0.0f, _currentTime / _crossfadeTime);
+                }
             }
             _currentTime += Time.deltaTime;
             yield return null;
         }
 
         for (int i = 0; i < _sections[_newSection]._layerObject.Length; i++)
+        {
             Destroy(_sections[_currentSection]._layerObject[i], 1.0f);
+        }
 
         _isRunningCrossfade = false;
+        _currentSection = _newSection;
     }
     IEnumerator WaitForCrossfade(int _newSection, float _crossfadeTime)
     {
         _isRunningCrossfadeCheck = true;
         while (_isRunningCrossfade)
+        {
             yield return null;
+        }
+
         _isRunningCrossfadeCheck = false;
         StartCoroutine(Crossfade(_newSection, _crossfadeTime));
+    }
+    IEnumerator Quantize(int _newSection, TransitionQuantization _quantization, TransitionFade _fade, float _crossfadeTime)
+    {
+        _isRunningQuantize = true;
+
+        float _timeToNextBeat = (60.0f / _trackBPM) / (_timeSignatureBottom / 4);
+        float _timeToNextBar = _timeToNextBeat * _timeSignatureTop;
+
+        if (_quantization == TransitionQuantization.OnNextBeat)
+        {
+            while ((float)Math.Round(_sections[_currentSection]._audioLayerACR[0].SFXPlayPosition, 1) % _timeToNextBeat != 0)
+            {
+                yield return null;
+            }
+        }
+        else if (_quantization == TransitionQuantization.OnNextSecondBeat)
+        {
+            while ((float)Math.Round(_sections[_currentSection]._audioLayerACR[0].SFXPlayPosition, 1) % _timeToNextBeat * 2 != 0)
+            {
+                yield return null;
+            }
+        }
+        else if (_quantization == TransitionQuantization.OnNextBar)
+        {
+            while ((float)Math.Round(_sections[_currentSection]._audioLayerACR[0].SFXPlayPosition, 1) % _timeToNextBar != 0)
+            {
+                yield return null;
+            }
+        }
+        if (_fade == TransitionFade.NoFade)
+        {
+            InitializeSection(_newSection);
+            for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+            {
+                Destroy(_sections[_currentSection]._layerObject[i]);
+            }
+        }
+        else
+        {
+            if (!_ignoreWarnings)
+            {
+                Debug.Log("OnTrigger, Crossfade, Immediate.");
+            }
+
+            if (!_isRunningCrossfade && !_isRunningCrossfadeCheck)
+            {
+                StartCoroutine(Crossfade(_newSection, _crossfadeTime));
+            }
+            else if (_isRunningCrossfade && !_isRunningCrossfadeCheck)
+            {
+                StartCoroutine(WaitForCrossfade(_newSection, _crossfadeTime));
+            }
+        }
+        _isRunningQuantize = false;
+    }
+    IEnumerator WaitForQuantize(int _newSection, TransitionQuantization _quantization, TransitionFade _fade, float _crossfadeTime)
+    {
+        _isRunningQuantizeCheck = true;
+        while (_isRunningQuantize)
+        {
+            yield return null;
+        }
+
+        _isRunningQuantizeCheck = false;
+        StartCoroutine(Quantize(_newSection, _quantization, _fade, _crossfadeTime));
     }
 }

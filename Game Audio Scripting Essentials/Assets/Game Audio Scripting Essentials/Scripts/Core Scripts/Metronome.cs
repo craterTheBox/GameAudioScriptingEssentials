@@ -7,8 +7,8 @@ public class Metronome : MonoBehaviour
 {
     [Header("Fields")]
     [Tooltip("Sound played on beat 1")]
-    [SerializeField] AudioRandomizerContainer _beatOneARC = null;
-    [HideInInspector] public AudioClipRandomizer _beatOne = null;
+    [SerializeField] AudioRandomizerContainer _beatOneARC;
+    [HideInInspector] public AudioClipRandomizer _beatOne;
     [Tooltip("Sound played on every beat except beat 1")]
     [SerializeField] AudioRandomizerContainer _beatARC;
     [HideInInspector] public AudioClipRandomizer _beat;
