@@ -80,7 +80,10 @@ using static SectionTransitions;
 [AddComponentMenu("Game Audio Scripting Essentials/Adaptive Music Container", 10)]
 public class AdaptiveMusicContainer : MonoBehaviour
 {
+    public enum PlayType { Automatic, Manual }
     [Header("Audio Settings")]
+    [Tooltip("Determines whether this container will play the audio automatically on enable or on trigger. \n\nAutomatic: Plays when the scene is run. \nManual: Plays when triggered.")]
+    [SerializeField] PlayType _playType = PlayType.Automatic;
     [Tooltip("Tempo of the audio clip in beats per minute. This is required for quantization to work properly.")]
     [Range(0, 300)]
     [SerializeField] int _trackBPM = 120;
@@ -90,6 +93,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
     [Tooltip("Note value of the beats")]
     [Range(1, 32)]
     [SerializeField] int _timeSignatureBottom = 4;
+    bool _isPlaying = false;
 
     [Header("Sections")]
     [SerializeField] Section[] _sections;
@@ -111,10 +115,29 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
     void Start()
     {
-        InitializeSection(_initialSection);
-        _currentSection = _initialSection;
-        SetStateImmediate(_initialState);
+        if (_playType == PlayType.Automatic)
+        {
+            RunContainer();
+        }
     }
+    public void RunContainer()
+    {
+        if (!_isPlaying)
+        {
+            _isPlaying = true;
+            InitializeSection(_initialSection);
+            _currentSection = _initialSection;
+            if (_playType == PlayType.Automatic)
+            {
+                SetStateImmediate(_initialState);
+            }
+            else
+            {
+                SetState(_initialState);
+            }
+        }
+    }
+
     void InitializeSection(int _newSection)
     {
         //Check for ARC Object or create one using the audio clips
@@ -177,19 +200,30 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
     void Update()
     {
-        //Checks for if the section has a transition trigger OnEnd
-        for (int i = 0; i < _sections[_currentSection].SectionTransitions.Length; i++)
+        if (_isPlaying)
         {
-            if (_sections[_currentSection].SectionTransitions[i].TriggerType == SectionTransitions.TransitionTrigger.OnEnd && !_sections[_currentSection]._audioLayerACR[0].Loop)
+            //Checks for if the section has a transition trigger OnEnd
+            for (int i = 0; i < _sections[_currentSection].SectionTransitions.Length; i++)
             {
-                TransitionSection(i);
-                break;
+                if (_sections[_currentSection].SectionTransitions[i].TriggerType == SectionTransitions.TransitionTrigger.OnEnd && !_sections[_currentSection]._audioLayerACR[0].Loop)
+                {
+                    TransitionSection(i);
+                    break;
+                }
             }
         }
     }
 
     public void SetState(int _newState)
     {
+        if (_sections.Length == 0 ^ _sections[_currentSection]._layerObject.Length == 0)
+        {
+            if (!_ignoreWarnings)
+            {
+                Debug.Log("Attempting to switch states without anything playing.");
+            }
+            return;
+        }
         //Sets the current state of the layers
         if (_newState >= _states.Length)
         {
@@ -250,6 +284,14 @@ public class AdaptiveMusicContainer : MonoBehaviour
     }
     public void SetStateImmediate(int _newState)
     {
+        if (_sections.Length == 0 ^ _sections[_currentSection]._layerObject.Length == 0)
+        {
+            if (!_ignoreWarnings)
+            {
+                Debug.Log("Attempting to switch states without anything playing.");
+            }
+            return;
+        }
         if (_states[_newState] == null)
         {
             for (int i = 0; i < _states[_currentState]._stateAudioLayerVolumes.Length; i++)
@@ -272,9 +314,28 @@ public class AdaptiveMusicContainer : MonoBehaviour
     //If no transition state at that index exists, it will not transition. 
     public void TransitionSection(int _transitionIndex)
     {
+        if (_sections.Length == 0 ^ _sections[_currentSection]._layerObject.Length == 0)
+        {
+            if (!_ignoreWarnings)
+            {
+                Debug.Log("Attempting to transition without anything playing.");
+            }
+            return;
+        }
+        if (_currentSection == _sections[_currentSection].SectionTransitions[_transitionIndex].TransitionInto)
+        {
+            if (!_ignoreWarnings)
+            {
+                Debug.Log("Attempting to transition into the current region.");
+            }
+            return;
+        }
         if (_sections[_currentSection].SectionTransitions.Length <= _transitionIndex)
         {
-            Debug.LogWarning("WARNING: Transition Index does not exist. Continuing on this section.");
+            if (!_ignoreWarnings)
+            {
+                Debug.LogWarning("WARNING: Transition Index does not exist. Continuing on this section.");
+            }
             return;
         }
 

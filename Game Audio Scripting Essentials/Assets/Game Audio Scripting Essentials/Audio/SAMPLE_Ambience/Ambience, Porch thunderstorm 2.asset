@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ee00c9f24b3bc44976a64350dcfbd6, type: 3}
+  m_Name: Ambience, Porch thunderstorm 2
+  m_EditorClassIdentifier: 
+  _audioClips:
+  - {fileID: 8300000, guid: 7a0bf986b7c4079488016997e2ffc8d9, type: 3}
+  _mixerGroup: {fileID: -8168665377078778557, guid: a7c9045f84b858a4584dfa2008459f86, type: 2}
+  _noRepeats: 0
+  _randomPitch: 0
+  _minPitch: 1
+  _maxPitch: 1
+  _volume: 1
+  _loop: 1
+  _priority: 128
+  _stereoPan: 0
+  _spatialBlend: 0
