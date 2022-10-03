@@ -157,16 +157,6 @@ public class AudioClipRandomizer : MonoBehaviour
 
         _isRunningCheck = false;
     }
-    public void PlayPreExistingSFX()
-    {
-        AudioSource _current = GetComponent<AudioSource>();
-        _current.Play();
-    }
-    public void PlayPreExistingSFX(int _index)
-    {
-        AudioSource _current = GetComponents<AudioSource>()[_index];
-        _current.Play();
-    }
     public void StopSFX()
     {
         AudioSource _current = GetComponent<AudioSource>();
@@ -261,36 +251,6 @@ public class AudioClipRandomizer : MonoBehaviour
         }
 
         return _longestLength;
-    }
-    public int GetIndexOfSFXLongestLength()
-    {
-        float _longestLength = 0.0f;
-        int _index = 0;
-
-        if (!_arcObjExists)
-        {
-            for (int i = 0; i < _audioClips.Length; i++)
-            {
-                if (_longestLength < _audioClips[i].length)
-                {
-                    _longestLength =  _audioClips[i].length;
-                    _index = i;
-                }
-            }
-        }
-        else
-        {
-            for (int i = 0; i < _arcObj.AudioClips.Length; i++)
-            {
-                if (_longestLength < _arcObj.GetLength(i))
-                {
-                    _longestLength = _arcObj.GetLength(i);
-                    _index = i;
-                }
-            }
-        }
-
-        return _index;
     }
     void DoesArcObjExist()
     {
