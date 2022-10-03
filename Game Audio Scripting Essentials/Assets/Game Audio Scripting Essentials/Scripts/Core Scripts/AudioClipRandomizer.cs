@@ -241,6 +241,57 @@ public class AudioClipRandomizer : MonoBehaviour
 
         return averageLength;
     }
+    public float GetSFXLongestLength()
+    {
+        float _longestLength = 0.0f;
+
+        if (!_arcObjExists)
+        {
+            for (int i = 0; i < _audioClips.Length; i++)
+            {
+                _longestLength = (_longestLength < _audioClips[i].length) ? _audioClips[i].length : _longestLength;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < _arcObj.AudioClips.Length; i++)
+            {
+                _longestLength = (_longestLength < _arcObj.GetLength(i)) ? _arcObj.GetLength(i) : _longestLength;
+            }
+        }
+
+        return _longestLength;
+    }
+    public int GetIndexOfSFXLongestLength()
+    {
+        float _longestLength = 0.0f;
+        int _index = 0;
+
+        if (!_arcObjExists)
+        {
+            for (int i = 0; i < _audioClips.Length; i++)
+            {
+                if (_longestLength < _audioClips[i].length)
+                {
+                    _longestLength =  _audioClips[i].length;
+                    _index = i;
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < _arcObj.AudioClips.Length; i++)
+            {
+                if (_longestLength < _arcObj.GetLength(i))
+                {
+                    _longestLength = _arcObj.GetLength(i);
+                    _index = i;
+                }
+            }
+        }
+
+        return _index;
+    }
     void DoesArcObjExist()
     {
         if (_arcObj != null)

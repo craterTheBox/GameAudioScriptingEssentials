@@ -13,6 +13,7 @@ using static SectionTransitions;
     public int AudioLayerCount() => _audioLayers.Length;
     [Tooltip("Transitions out of this section")]
     [SerializeField] SectionTransitions[] _sectionTransitions;
+    public AudioClipRandomizer[] AudioLayerACR => _audioLayerACR;
     public SectionTransitions[] SectionTransitions => _sectionTransitions;
 }
 [Serializable] public class Layer
@@ -175,13 +176,15 @@ public class AdaptiveMusicContainer : MonoBehaviour
             _sections[_newSection]._audioLayerACR[i].OverrideArcSettings = false;
             _sections[_newSection]._audioLayerACR[i].PlaySFX();
 
-            if (_states.Length > 0)
+            ///////////////
+
+            if (_sections[_newSection].AudioLayerCount() <= _states[_currentState].StateAudioLayerVolumes.Length || i < _states[_currentState].StateAudioLayerVolumes.Length)
             {
-                _sections[_newSection]._audioLayerACR[i].SFXVolume = _states[_currentState].StateAudioLayerVolumes[i];
+                _sections[_newSection].AudioLayerACR[i].SFXVolume = _states[_currentState].StateAudioLayerVolumes[i];
             }
-            else
+            else if (_states[_currentState].StateAudioLayerVolumes.Length <= i)
             {
-                _sections[_newSection]._audioLayerACR[i].SFXVolume = _sections[_newSection].AudioLayers[i]._audioLayerVolumes;
+                _sections[_newSection].AudioLayerACR[i].SFXVolume = _sections[_newSection].AudioLayers[i]._audioLayerVolumes;
             }
         }
 
@@ -229,7 +232,14 @@ public class AdaptiveMusicContainer : MonoBehaviour
         {
             for (int i = 0; i < _states[_currentState]._stateAudioLayerVolumes.Length; i++)
             {
-                _sections[_currentSection]._audioLayerACR[i].SFXVolume = _states[_currentState]._stateAudioLayerVolumes[i];
+                if (_sections[_currentSection].AudioLayerCount() <= _states[_newState].StateAudioLayerVolumes.Length || i < _states[_currentState].StateAudioLayerVolumes.Length)
+                {
+                    _sections[_currentSection].AudioLayerACR[i].SFXVolume = _states[_newState].StateAudioLayerVolumes[i];
+                }
+                else if (_states[_newState].StateAudioLayerVolumes.Length <= i)
+                {
+                    _sections[_currentSection].AudioLayerACR[i].SFXVolume = _sections[_currentSection].AudioLayers[i]._audioLayerVolumes;
+                }
             }
         }
 
@@ -238,7 +248,14 @@ public class AdaptiveMusicContainer : MonoBehaviour
         {
             for (int i = 0; i < _sections[_currentSection].AudioLayerCount(); i++)
             {
-                _sections[_currentSection]._audioLayerACR[i].SFXVolume = _states[_newState]._stateAudioLayerVolumes[i];
+                if (_sections[_currentSection].AudioLayerCount() <= _states[_newState].StateAudioLayerVolumes.Length || i < _states[_currentState].StateAudioLayerVolumes.Length)
+                {
+                    _sections[_currentSection].AudioLayerACR[i].SFXVolume = _states[_newState].StateAudioLayerVolumes[i];
+                }
+                else if (_states[_newState].StateAudioLayerVolumes.Length <= i)
+                {
+                    _sections[_currentSection].AudioLayerACR[i].SFXVolume = _sections[_currentSection].AudioLayers[i]._audioLayerVolumes;
+                }
             }
         }
         else
@@ -249,25 +266,28 @@ public class AdaptiveMusicContainer : MonoBehaviour
                 float _currentTime = 0.0f;
                 float[] _currentVolume = new float[_sections[_currentSection].AudioLayerCount()];
 
-                if (_currentState == 0)
+                for (int i = 0; i < _sections[_currentSection].AudioLayerCount(); i++)
                 {
-                    for (int i = 0; i < _sections[_currentSection].AudioLayerCount(); i++)
-                    {
-                        _currentVolume[i] = _sections[_currentSection]._audioLayerACR[i].SFXVolume;
-                    }
-                }
-                else
-                {
-                    _currentVolume = _states[_currentState]._stateAudioLayerVolumes;
+                    _currentVolume[i] = _sections[_currentSection].AudioLayerACR[i].SFXVolume;
                 }
 
                 while (_currentTime < _states[_newState].GradualStateChangeTime)
                 {
                     for (int i = 0; i < _sections[_currentSection].AudioLayerCount(); i++)
                     {
-                        if (_currentVolume[i] != _states[_newState]._stateAudioLayerVolumes[i])
+                        if (_sections[_currentSection].AudioLayerCount() <= _states[_newState].StateAudioLayerVolumes.Length || i < _states[_newState].StateAudioLayerVolumes.Length)
                         {
-                            _sections[_currentSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(_currentVolume[i], _states[_newState]._stateAudioLayerVolumes[i], _currentTime / _states[_newState].GradualStateChangeTime);
+                            if (_currentVolume[i] != _states[_newState].StateAudioLayerVolumes[i])
+                            {
+                                _sections[_currentSection].AudioLayerACR[i].SFXVolume = Mathf.Lerp(_currentVolume[i], _states[_newState].StateAudioLayerVolumes[i], _currentTime / _states[_newState].GradualStateChangeTime);
+                            }
+                        }
+                        else if (_states[_currentState].StateAudioLayerVolumes.Length <= i)
+                        {
+                            if (_currentVolume[i] != _sections[_currentSection].AudioLayers[i]._audioLayerVolumes)
+                            {
+                                _sections[_currentSection].AudioLayerACR[i].SFXVolume = Mathf.Lerp(_currentVolume[i], _sections[_currentSection].AudioLayers[i]._audioLayerVolumes, _currentTime / _states[_newState].GradualStateChangeTime);
+                            }
                         }
                     }
 
@@ -294,9 +314,16 @@ public class AdaptiveMusicContainer : MonoBehaviour
         }
         if (_states[_newState] == null)
         {
-            for (int i = 0; i < _states[_currentState]._stateAudioLayerVolumes.Length; i++)
+            for (int i = 0; i < _states[_currentState].StateAudioLayerVolumes.Length; i++)
             {
-                _sections[_currentSection]._audioLayerACR[i].SFXVolume = _states[_currentState]._stateAudioLayerVolumes[i];
+                if (_sections[_currentSection].AudioLayerCount() <= _states[_newState].StateAudioLayerVolumes.Length)
+                {
+                    _sections[_currentSection].AudioLayerACR[i].SFXVolume = _states[_currentState].StateAudioLayerVolumes[i];
+                }
+                else if (_states[_newState].StateAudioLayerVolumes.Length <= i)
+                {
+                    _sections[_currentSection].AudioLayerACR[i].SFXVolume = _sections[_currentSection].AudioLayers[i]._audioLayerVolumes;
+                }
             }
 
             return;
@@ -304,7 +331,14 @@ public class AdaptiveMusicContainer : MonoBehaviour
         //Sets the initial volume abruptly
         for (int i = 0; i < _sections[_currentSection].AudioLayerCount(); i++)
         {
-            _sections[_currentSection]._audioLayerACR[i].SFXVolume = _states[_newState]._stateAudioLayerVolumes[i];
+            if (_sections[_currentSection].AudioLayerCount() <= _states[_newState].StateAudioLayerVolumes.Length)
+            {
+                _sections[_currentSection].AudioLayerACR[i].SFXVolume = _states[_newState].StateAudioLayerVolumes[i];
+            }
+            else if (_states[_newState].StateAudioLayerVolumes.Length <= i)
+            {
+                _sections[_currentSection].AudioLayerACR[i].SFXVolume = _sections[_currentSection].AudioLayers[i]._audioLayerVolumes;
+            }
         }
 
         _currentState = _newState;
@@ -361,7 +395,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
                     }
 
                     InitializeSection(_newSection);
-                    for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+                    for (int i = 0; i < _sections[_currentSection].AudioLayerACR.Length; i++)
                     {
                         Destroy(_sections[_currentSection]._layerObject[i]);
                     }
@@ -385,7 +419,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
                     }
                 }
             }
-            //Fade: Crossfade // 1/4
+            //Fade: Crossfade
             else if (fadeType == SectionTransitions.TransitionFade.Crossfade)
             {
                 //Quant: Immediate // WORKS
@@ -424,12 +458,24 @@ public class AdaptiveMusicContainer : MonoBehaviour
                 }
             }
         }
-        //Trigger: OnEnd // 1/1
+        //Trigger: OnEnd
         else if (triggerType == SectionTransitions.TransitionTrigger.OnEnd)
         {
             IEnumerator NoFadeOnEnd()
             {
-                while (_sections[_currentSection]._audioLayerACR[0].IsSFXPlaying())
+                float _longestLength = 0.0f;
+                int _index = 0;
+
+                for (int i = 0; i < _sections[_currentSection].AudioLayerACR.Length; i++)
+                {
+                    if (_longestLength < _sections[_currentSection].AudioLayerACR[i].GetSFXLongestLength())
+                    {
+                        _longestLength = _sections[_currentSection].AudioLayerACR[i].GetSFXLongestLength();
+                        _index = i;
+                    }
+                }
+                //Checks the longest layer to see if it is playing
+                while (_sections[_currentSection].AudioLayerACR[_index].IsSFXPlaying())
                 {
                     yield return null;
                 }
@@ -440,7 +486,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
                 }
 
                 InitializeSection(_newSection);
-                for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+                for (int i = 0; i < _sections[_currentSection].AudioLayerACR.Length; i++)
                 {
                     Destroy(_sections[_currentSection]._layerObject[i]);
                 }
@@ -450,7 +496,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
             }
             StartCoroutine(NoFadeOnEnd());
         }
-        //Failsafe // 1/1
+        //Failsafe
         else
         {
             if (!_ignoreWarnings)
@@ -459,7 +505,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
             }
 
             InitializeSection(_newSection);
-            for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+            for (int i = 0; i < _sections[_currentSection].AudioLayerACR.Length; i++)
             {
                 Destroy(_sections[_currentSection]._layerObject[i]);
             }
@@ -475,20 +521,83 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
         while (_currentTime < _crossfadeTime)
         {
-            for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+            if (_sections[_currentSection].AudioLayerACR.Length == _sections[_newSection].AudioLayerACR.Length)
             {
-                _sections[_newSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(0.0f, 1.0f * _states[_currentState].StateAudioLayerVolumes[i], _currentTime / _crossfadeTime);
-
-                if (_sections[_currentSection]._layerObject[i].GetComponent<AudioSource>())
+                for (int i = 0; i < _sections[_currentSection].AudioLayerACR.Length; i++)
                 {
-                    _sections[_currentSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(1.0f * _states[_currentState].StateAudioLayerVolumes[i], 0.0f, _currentTime / _crossfadeTime);
+                    if (_sections[_currentSection].AudioLayerCount() <= _states[_currentState].StateAudioLayerVolumes.Length || i < _states[_currentState].StateAudioLayerVolumes.Length)
+                    {
+                        _sections[_newSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(0.0f, 1.0f * _states[_currentState].StateAudioLayerVolumes[i], _currentTime / _crossfadeTime);
+
+                        if (_sections[_currentSection]._layerObject[i].GetComponent<AudioSource>())
+                        {
+                            _sections[_currentSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(1.0f * _states[_currentState].StateAudioLayerVolumes[i], 0.0f, _currentTime / _crossfadeTime);
+                        }
+                    }
+                    else if (_states[_currentState].StateAudioLayerVolumes.Length <= i)
+                    {
+                        _sections[_newSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(0.0f, 1.0f * _sections[_currentSection].AudioLayers[i]._audioLayerVolumes, _currentTime / _crossfadeTime);
+
+                        if (_sections[_currentSection]._layerObject[i].GetComponent<AudioSource>())
+                        {
+                            _sections[_currentSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(1.0f * _sections[_currentSection].AudioLayers[i]._audioLayerVolumes, 0.0f, _currentTime / _crossfadeTime);
+                        }
+                    }
                 }
             }
+            //Goes down here when the sections have a different number of layers
+            else if (_sections[_currentSection].AudioLayerACR.Length != _sections[_newSection].AudioLayerACR.Length)
+            {
+                //Index of the section with more layers
+                int _mostLayers = (_sections[_currentSection].AudioLayerACR.Length > _sections[_newSection].AudioLayerACR.Length) ? _currentSection : _newSection;
+                int _leastLayers = (_sections[_currentSection].AudioLayerACR.Length < _sections[_newSection].AudioLayerACR.Length) ? _currentSection : _newSection;
+
+                for (int i = 0; i < _sections[_mostLayers].AudioLayerACR.Length; i++)
+                {
+                    //If the section with the least layers has a layer count of less than or equal to i (layer count), only update the section with more layers
+                    if (_sections[_leastLayers].AudioLayerACR.Length <= i)
+                    {
+                        if (_leastLayers == _currentSection)
+                        {
+                            if (_sections[_newSection].AudioLayerCount() <= _states[_currentState].StateAudioLayerVolumes.Length || i < _states[_currentState].StateAudioLayerVolumes.Length)
+                            {
+                                _sections[_newSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(0.0f, 1.0f * _states[_currentState].StateAudioLayerVolumes[i], _currentTime / _crossfadeTime);
+                            }
+                            else if (_states[_currentState].StateAudioLayerVolumes.Length <= i)
+                            {
+                                _sections[_newSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(0.0f, 1.0f * _sections[_newSection].AudioLayers[i]._audioLayerVolumes, _currentTime / _crossfadeTime);
+                            }
+                        }
+                        else
+                        {
+                            if (_sections[_currentSection]._layerObject[i].GetComponent<AudioSource>() && _sections[_currentSection].AudioLayerCount() <= _states[_currentState].StateAudioLayerVolumes.Length || i < _states[_currentState].StateAudioLayerVolumes.Length)
+                            {
+                                _sections[_currentSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(1.0f * _states[_currentState].StateAudioLayerVolumes[i], 0.0f, _currentTime / _crossfadeTime);
+                            }
+                            else if (_sections[_currentSection]._layerObject[i].GetComponent<AudioSource>() && _states[_currentState].StateAudioLayerVolumes.Length <= i)
+                            {
+                                _sections[_currentSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(1.0f * _sections[_currentSection].AudioLayers[i]._audioLayerVolumes, 0.0f, _currentTime / _crossfadeTime);
+                            }
+                        }
+                    }
+                    //Otherwise it will just do the normal thing and update both
+                    else
+                    {
+                        _sections[_newSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(0.0f, 1.0f * _states[_currentState].StateAudioLayerVolumes[i], _currentTime / _crossfadeTime);
+
+                        if (_sections[_currentSection]._layerObject[i].GetComponent<AudioSource>())
+                        {
+                            _sections[_currentSection]._audioLayerACR[i].SFXVolume = Mathf.Lerp(1.0f * _states[_currentState].StateAudioLayerVolumes[i], 0.0f, _currentTime / _crossfadeTime);
+                        }
+                    }
+                }
+            }
+
             _currentTime += Time.deltaTime;
             yield return null;
         }
 
-        for (int i = 0; i < _sections[_newSection]._layerObject.Length; i++)
+        for (int i = 0; i < _sections[_currentSection]._layerObject.Length; i++)
         {
             Destroy(_sections[_currentSection]._layerObject[i]);
         }
@@ -516,21 +625,21 @@ public class AdaptiveMusicContainer : MonoBehaviour
 
         if (_quantization == TransitionQuantization.OnNextBeat)
         {
-            while ((float)Math.Round(_sections[_currentSection]._audioLayerACR[0].SFXPlayPosition, 1) % _timeToNextBeat != 0)
+            while ((float)Math.Round(_sections[_currentSection].AudioLayerACR[0].SFXPlayPosition, 1) % _timeToNextBeat != 0)
             {
                 yield return null;
             }
         }
         else if (_quantization == TransitionQuantization.OnNextSecondBeat)
         {
-            while ((float)Math.Round(_sections[_currentSection]._audioLayerACR[0].SFXPlayPosition, 1) % _timeToNextBeat * 2 != 0)
+            while ((float)Math.Round(_sections[_currentSection].AudioLayerACR[0].SFXPlayPosition, 1) % _timeToNextBeat * 2 != 0)
             {
                 yield return null;
             }
         }
         else if (_quantization == TransitionQuantization.OnNextBar)
         {
-            while ((float)Math.Round(_sections[_currentSection]._audioLayerACR[0].SFXPlayPosition, 1) % _timeToNextBar != 0)
+            while ((float)Math.Round(_sections[_currentSection].AudioLayerACR[0].SFXPlayPosition, 1) % _timeToNextBar != 0)
             {
                 yield return null;
             }
@@ -538,7 +647,7 @@ public class AdaptiveMusicContainer : MonoBehaviour
         if (_fade == TransitionFade.NoFade)
         {
             InitializeSection(_newSection);
-            for (int i = 0; i < _sections[_currentSection]._audioLayerACR.Length; i++)
+            for (int i = 0; i < _sections[_currentSection].AudioLayerACR.Length; i++)
             {
                 Destroy(_sections[_currentSection]._layerObject[i]);
             }
