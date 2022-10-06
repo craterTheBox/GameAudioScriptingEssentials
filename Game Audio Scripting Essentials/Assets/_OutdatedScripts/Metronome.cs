@@ -33,10 +33,10 @@ public class Metronome : MonoBehaviour
             _timeToNextBeat = (60.0f / _bpm) / (_bottomTimeSignature / 4);
             _timeToNextBar = _timeToNextBeat * _topTimeSignature;
             
-            StartCoroutine(MetronomeTick());
+            //StartCoroutine(MetronomeTick());
         }
-        else
-            Debug.LogError("WARNING: Metronome's note value is invalid");
+        //else
+            //Debug.LogError("WARNING: Metronome's note value is invalid");
     }
 
     void Update()
@@ -46,8 +46,8 @@ public class Metronome : MonoBehaviour
             _timeToNextBeat = (60.0f / _bpm) / (_bottomTimeSignature / 4);
             _timeToNextBar = _timeToNextBeat * _topTimeSignature;
         }
-        else
-            Debug.LogError("WARNING: Metronome's note value is invalid: " + _bottomTimeSignature);
+        //else
+            //Debug.LogError("WARNING: Metronome's note value is invalid: " + _bottomTimeSignature);
     }
 
     IEnumerator MetronomeTick()
