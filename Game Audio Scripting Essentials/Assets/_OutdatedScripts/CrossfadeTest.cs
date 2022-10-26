@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GameAudioScriptingEssentials;
 
 public class CrossfadeTest : MonoBehaviour
 {
     [SerializeField] AudioClipRandomizer m_clipSectionOne;
-    //[SerializeField] 
     GameObject buffer;
     AudioClipRandomizer m_clipSectionTwo;
     [SerializeField] AudioClipRandomizer[] m_audioLayer;

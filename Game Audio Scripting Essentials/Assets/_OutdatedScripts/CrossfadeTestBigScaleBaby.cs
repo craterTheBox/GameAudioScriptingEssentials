@@ -1,6 +1,6 @@
-using System;
 using System.Collections;
 using UnityEngine;
+using GameAudioScriptingEssentials;
 
 public class CrossfadeTestBigScaleBaby : MonoBehaviour
 {

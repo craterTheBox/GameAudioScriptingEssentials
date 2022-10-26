@@ -1,7 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
+using GameAudioScriptingEssentials;
 
 [AddComponentMenu("Game Audio Scripting Essentials/Example Scripts/Player Controller", 9998)]
 public class GASE_PlayerController : MonoBehaviour
@@ -56,7 +55,7 @@ public class GASE_PlayerController : MonoBehaviour
 
         isMoving = isMovingHori || isMovingVert;
 
-        if (!isCoroutineRunning)
+        if (!isCoroutineRunning && isMoving)
             StartCoroutine(Footsteps());
     }
 

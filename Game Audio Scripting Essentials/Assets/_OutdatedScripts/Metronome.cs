@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GameAudioScriptingEssentials;
 
 //[AddComponentMenu("Game Audio Scripting Essentials/Metronome", 40)]
 public class Metronome : MonoBehaviour
