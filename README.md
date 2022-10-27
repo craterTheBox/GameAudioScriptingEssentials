@@ -2,6 +2,8 @@
  
 ***Game audio tools made by a sound designer/composer for sound designers/composers!***
 
+[**Click here to go to the Unity Asset Store page!**](https://assetstore.unity.com/packages/tools/audio/game-audio-scripting-essentials-233849)
+
 The Game Audio Scripting Essentials package will help you along on your journey to implement audio in your games and projects, making it easy to do a few key features of middleware like FMOD and Wwise without the need for them.
 
 <img src="https://images.squarespace-cdn.com/content/v1/615483d45dbf5b20f5e3b9b9/ef3042aa-34ec-42ea-a415-ce555de2e775/GameAudioScriptingEssentials_cover.png?format=750w" title="GASE_Cover" alt="GASE_Cover Image"/>&nbsp;
