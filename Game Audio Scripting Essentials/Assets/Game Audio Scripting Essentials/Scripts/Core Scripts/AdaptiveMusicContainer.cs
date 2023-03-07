@@ -87,6 +87,8 @@ namespace GameAudioScriptingEssentials
         [Header("Audio Settings")]
         [Tooltip("Determines whether this container will play the audio automatically on enable or on trigger. \n\nAutomatic: Plays when the scene is run. \nManual: Plays when triggered.")]
         [SerializeField] PlayType _playType = PlayType.Automatic;
+        [Tooltip("If true, this will destroy the layers upon their completion.")]
+        [SerializeField] bool _isOneShot = false;
         [Tooltip("Tempo of the audio clip in beats per minute. This is required for quantization to work properly.")]
         [Range(0, 300)]
         [SerializeField] int _trackBPM = 120;
@@ -127,16 +129,23 @@ namespace GameAudioScriptingEssentials
         {
             if (!_isPlaying)
             {
-                _isPlaying = true;
-                InitializeSection(_initialSection);
-                _currentSection = _initialSection;
-                if (_playType == PlayType.Automatic)
+                if (!_isOneShot)
                 {
-                    SetStateImmediate(_initialState);
+                    _isPlaying = true;
+                    InitializeSection(_initialSection);
+                    _currentSection = _initialSection;
+                    if (_playType == PlayType.Automatic)
+                    {
+                        SetStateImmediate(_initialState);
+                    }
+                    else
+                    {
+                        SetState(_initialState);
+                    }
                 }
                 else
                 {
-                    SetState(_initialState);
+                    InitializeSectionOneShot(_initialSection);
                 }
             }
         }
@@ -179,6 +188,70 @@ namespace GameAudioScriptingEssentials
                 _sections[_newSection]._audioLayerACR[i].PlaySFX();
 
                 ///////////////
+
+                if (_sections[_newSection].AudioLayerCount() <= _states[_currentState].StateAudioLayerVolumes.Length || i < _states[_currentState].StateAudioLayerVolumes.Length)
+                {
+                    _sections[_newSection].AudioLayerACR[i].SFXVolume = _states[_currentState].StateAudioLayerVolumes[i];
+                }
+                else if (_states[_currentState].StateAudioLayerVolumes.Length <= i)
+                {
+                    _sections[_newSection].AudioLayerACR[i].SFXVolume = _sections[_newSection].AudioLayers[i]._audioLayerVolumes;
+                }
+            }
+
+            //Checks if the layers are the same length
+            float _previousAverageLength = -1.0f;
+
+            for (int i = 0; i < _sections[_newSection].AudioLayers.Length; i++)
+            {
+                if (!_ignoreWarnings && _previousAverageLength != -1.0f && _previousAverageLength != _sections[_newSection]._audioLayerACR[i].GetSFXAverageLength())
+                {
+                    Debug.LogWarning("WARNING: Audio Layers in obj \"" + name + "\" are at differing lengths. This is not a critical error.");
+                }
+                _previousAverageLength = _sections[_newSection]._audioLayerACR[i].GetSFXAverageLength();
+            }
+        }
+
+        void InitializeSectionOneShot(int _newSection)
+        {
+            //Check for ARC Object or create one using the audio clips
+            for (int i = 0; i < _sections[_newSection].AudioLayers.Length; i++)
+            {
+                if (_sections[_newSection].AudioLayers[i].ArcObj.AudioClips.Length > 0)
+                {
+                    break;
+                }
+                //If no ARC Object, this will create one using the clips provided (granted, with default settings)
+                else if (_sections[_newSection].AudioLayers[i].ArcObj.AudioClips.Length == 0 && _sections[_newSection].AudioLayers[i].AudioClips.Length != 0)
+                {
+                    _sections[_newSection].AudioLayers[i].ArcObj = ScriptableObject.CreateInstance<AudioRandomizerContainer>();
+                    _sections[_newSection].AudioLayers[i].ArcObj.AudioClips = _sections[_newSection].AudioLayers[i].AudioClips;
+                    //Now it has an ARC Object. You're welcome
+                }
+                else
+                {
+                    Debug.LogWarning("WARNING: No audio clips or Audio Randomizer Container found.");
+                }
+            }
+
+            _sections[_newSection]._layerObject = new GameObject[_sections[_newSection].AudioLayerCount()];
+            _sections[_newSection]._audioLayerACR = new AudioClipRandomizer[_sections[_newSection].AudioLayerCount()];
+
+            //Plays the SFX
+            for (int i = 0; i < _sections[_newSection].AudioLayers.Length; i++)
+            {
+                string _name = "Section " + _newSection + ", Layer " + i;
+
+                _sections[_newSection]._layerObject[i] = new GameObject(_name);
+                _sections[_newSection]._layerObject[i].transform.SetParent(transform);
+                _sections[_newSection]._audioLayerACR[i] = _sections[_newSection]._layerObject[i].AddComponent<AudioClipRandomizer>();
+                _sections[_newSection]._audioLayerACR[i].ArcObj = _sections[_newSection].AudioLayers[i].ArcObj;
+                _sections[_newSection]._audioLayerACR[i].OverrideArcSettings = false;
+                _sections[_newSection]._audioLayerACR[i].PlaySFX();
+
+                ///////////////
+
+                StartCoroutine(DestroyOnPlay(_sections[_newSection]._layerObject[i]));
 
                 if (_sections[_newSection].AudioLayerCount() <= _states[_currentState].StateAudioLayerVolumes.Length || i < _states[_currentState].StateAudioLayerVolumes.Length)
                 {
@@ -682,6 +755,20 @@ namespace GameAudioScriptingEssentials
 
             _isRunningQuantizeCheck = false;
             StartCoroutine(Quantize(_newSection, _quantization, _fade, _crossfadeTime));
+        }
+        IEnumerator DestroyOnPlay(GameObject _layer)
+        {
+            //AudioClipRandomizer _acr = _layer.GetComponent<AudioClipRandomizer>();
+
+            while (_layer.GetComponent<AudioSource>())
+            {
+                yield return null;
+            }
+
+            Destroy(_layer);
+
+            _isPlaying = false;
+            yield return null;
         }
     }
 }
