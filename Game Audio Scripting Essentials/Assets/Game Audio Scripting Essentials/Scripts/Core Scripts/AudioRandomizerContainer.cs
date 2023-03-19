@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -16,17 +17,32 @@ namespace GameAudioScriptingEssentials
         [Header("Settings")]
         [Tooltip("Toggle for whether or not it will repeat the same clip in a row. This is automatically disabled when there is only one clip")]
         [SerializeField] public bool _noRepeats = true;
+
+        #region Pitch
+        [Tooltip("Pitch of the audio clips")]
+        [SerializeField] float _pitch = 1.0f;
         [Tooltip("Toggle for randomizing the pitch of the audio clips")]
         [SerializeField] bool _randomPitch = true;
         [Tooltip("Minimum pitch value")]
         [Range(-3.0f, 3.0f)]
-        [SerializeField] float _minPitch = 0.50f;
+        [SerializeField] float _minPitch = 0.80f;
         [Tooltip("Maximum pitch value")]
         [Range(-3.0f, 3.0f)]
-        [SerializeField] float _maxPitch = 1.50f;
+        [SerializeField] float _maxPitch = 1.20f;
+        #endregion
+        #region Volume
         [Tooltip("Volume of the audio clips")]
         [Range(0.0f, 1.0f)]
         [SerializeField] float _volume = 1.0f;
+        [Tooltip("Toggle for randomizing the volume of the audio clips")]
+        [SerializeField] bool _randomVolume = false;
+        [Tooltip("Minimum volume value")]
+        [Range(0.0f, 1.0f)]
+        [SerializeField] float _minVolume = 1.0f;
+        [Tooltip("Maximum volume value")]
+        [Range(0.0f, 1.0f)]
+        [SerializeField] float _maxVolume = 1.0f;
+        #endregion
         [Tooltip("Toggle for the clips looping or playing once")]
         [SerializeField] bool _loop = false;
         [Tooltip("Sets the priority of the audio clips")]
@@ -64,6 +80,11 @@ namespace GameAudioScriptingEssentials
             get => _noRepeats;
             set => _noRepeats = value;
         }
+        public float Pitch
+        {
+            get => _pitch;
+            set => _pitch = value;
+        }
         public bool RandomPitch
         {
             get => _randomPitch;
@@ -76,14 +97,26 @@ namespace GameAudioScriptingEssentials
         {
             get => _maxPitch;
         }
-        public bool Loop
-        {
-            get => _loop;
-        }
         public float Volume
         {
             get => _volume;
             set => _volume = value;
+        }
+        public bool RandomVolume
+        {
+            get => _randomVolume;
+        }
+        public float MinVolume
+        {
+            get => _minVolume;
+        }
+        public float MaxVolume
+        {
+            get => _maxVolume;
+        }
+        public bool Loop
+        {
+            get => _loop;
         }
         public AudioMixerGroup MixerGroup
         {

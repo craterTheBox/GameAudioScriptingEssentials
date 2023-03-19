@@ -26,10 +26,10 @@ namespace GameAudioScriptingEssentials
         [SerializeField] bool _randomPitch = true;
         [Tooltip("Minimum pitch value")]
         [Range(-3.0f, 3.0f)]
-        [SerializeField] float _minPitch = 0.50f;
+        [SerializeField] float _minPitch = 0.80f;
         [Tooltip("Maximum pitch value")]
         [Range(-3.0f, 3.0f)]
-        [SerializeField] float _maxPitch = 1.50f;
+        [SerializeField] float _maxPitch = 1.20f;
         [Tooltip("Volume of the audio clips")]
         [Range(0.0f, 1.0f)]
         [SerializeField] float _volume = 1.0f;
